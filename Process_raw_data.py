@@ -25,11 +25,17 @@ underlying = underlying1.append(underlying2)
 # Remove unnecessary columns
 underlying = underlying.drop([" Open", " High", " Low"], axis = 1)
 
-# Creates a new column with the standard deviation of the returns of the past 20 days
-underlying['Historical_Vol'] = underlying[" Close"].rolling(21).apply(lambda x:
+# Convert data on Date column of underlying df to datetime64
+underlying['Date'] = pd.to_datetime(underlying['Date'])
+
+# Sort underlying df by Date column, in ascending order
+underlying = underlying.sort_values(by='Date')
+    
+# Creates a new column with the standard deviation of the returns from the past 20 days
+underlying['Historical_Vol'] = underlying[" Close"].rolling(20).apply(lambda x:
                                                 (np.diff(x) / x[:-1]).std())
 
-
+    
 # Treasury rates
 # Create df for treasury rates from August to September 2018
 treasury1 = pd.read_csv("Data/Treasury/Treasury_rates_August-September_2018.csv")
@@ -39,6 +45,16 @@ treasury2 = pd.read_csv("Data/Treasury/Treasury_rates_July-August_2019.csv")
 
 # Create df with all treasury rates data
 treasury = treasury1.append(treasury2)
+
+# List with the different maturities, in years, of Treasury bonds
+treasury_maturities = [1/12, 2/12, 3/12, 6/12, 1, 2, 3, 5, 7, 10, 20, 30] 
+
+# Change column names of treasury df
+treasury_columns = ["Date", 1/12, 2/12, 3/12, 6/12, 1, 2, 3, 5, 7, 10, 20, 30] 
+treasury.columns = treasury_columns
+
+# Convert data on Date column of treasury df to datetime64
+treasury['Date'] = pd.to_datetime(treasury['Date'])
 
 
 # Options
@@ -62,7 +78,7 @@ p = Path("Data/Options")
 # Create a list of the option files from August 2019
 options2_files = list(p.glob('L2_options_201908*.csv'))
 
-# Creates df from all files (might take a while)
+# Creates df from all files
 # options2 = pd.concat([pd.read_csv(f) for f in options2_files]) # REMOVE COMMENT IN FINAL VERSION
 options2 = pd.read_csv("Data/Options/L2_options_20190801.csv")
 
@@ -79,8 +95,10 @@ options2 = options2.drop(['UnderlyingSymbol', 'UnderlyingPrice', 'Exchange',
 options2 = options2.rename(columns = {'DataDate': 'QuoteDate', "Type": "OptionType"})
 
 # Create df with all options data
-options = options1.append(options2)
-options = options.iloc[:5] # REMOVE IN FINAL VERSION
+# options = options1.append(options2)
+# options = options.iloc[:5] # REMOVE IN FINAL VERSION
+options = options1 # REMOVE IN FINAL VERSION
+options = options.iloc[1048:1546] # REMOVE IN FINAL VERSION
 
 # Create function that returns the number of years between two dates
 def years_between(d1, d2):
@@ -112,37 +130,58 @@ for index, row in options.iterrows():
 # Create new column with the average price
 options['Average_Price'] = average_price
 
-# List with the different maturities, in years, of Treasury bonds
-treasury_maturities = [1/12, 2/12, 3/12, 6/12, 1, 2, 3, 5, 7, 10, 20, 30] 
-# treasury_maturities = [1/12, 2/12] # REMOVE COMMENT IN FINAL VERSION
-
 # Subtract the TTM of each option with the different maturities
 differences = pd.DataFrame(columns = treasury_maturities)
 
 for index, row in options.iterrows():
-    list_s = [abs(maturity - row.Time_to_Maturity) for maturity in 
-          treasury_maturities]
-    differences.loc[len(differences)] = list_s
+   list_s = [abs(maturity - row.Time_to_Maturity) for maturity in 
+              treasury_maturities]
+   differences.loc[len(differences)] = list_s
 
-# Add Treasury maturity columns (the differences df) to the options df
+# Add to the options df, the columns for each Treasury maturity containing the 
+# differences calculated previously
 options.reset_index(inplace = True, drop = True)
-options = pd.concat([options, differences], axis=1)
+options = pd.concat([options, differences], axis = 1)
 
+# Retrieve the maturity that is closest to the TTM of the option
+ # if pd.to_datetime(2018-08-01) <= row.QuoteDate <= pd.to_datetime(2018-09-28): 
+    # # because there aren't data for 2 month rates between these dates
+    #     if 1.5/12 <= row.Time_to_Maturity <= 2/12:
+            
+    #     elif 2/12 < row.Time_to_Maturity <= 2.5/12:
+            
+    # else   
+# if pd.to_datetime(2018-08-01) <= options["QuoteDate"] <= pd.to_datetime(2018-09-28):
 
-# transformar o nome das colunas de Treasury nos valores de treasury_maturities?
-# subtrair ttm de cada opção às diferentes maturidades das obrigações
-# aplicar abs a cada subtração
-# selecionar o menor valor absoluto
-# relacionar esse mínimo com a maturidade da obrigação, tendo atenção aos NAs
-# recolher a taxa respetiva a essa maturidade e à data da opção em causa
-# adicionar nova coluna a options com a rf rate para cada opção
+# else
+maturity_closest_ttm = options[treasury_maturities].idxmin(axis = 1) ##########
 
-# create new column in options for the vol(sigma)
-# get vol from the underlying df for the corresponding DataDate of each option
+# Add maturity_closest_ttm as a new column in options df and change it's name.
+options = pd.concat([options, maturity_closest_ttm], axis = 1)
+options = options.rename(columns = {0:'Maturity_Closest_TTM'})
 
-# Add column with the standard deviation calculated for the underlying
-# options["Historical_Vol"] = underlying[underlying["Date"] == 
-#                                        options["QuoteDate"]]["Historical_Vol"]
+# Convert data on QuoteDate column of options df to datetime64
+options['QuoteDate'] = pd.to_datetime(options['QuoteDate'])
+
+# Create list with the Treasury rate that matches the each option's QuoteDate 
+# and Maturity_Closest_TTM # ATENÇÃO AOS NA QUANDO USAR OS DADOS COMPLETOS
+rf_rate = []
+for index, row in options.iterrows():
+    rf_rate.append(float(treasury[row.Maturity_Closest_TTM].loc[(treasury["Date"] == row.QuoteDate)]))
+
+# Add rf_rate as a column in the options df and drop unnecessary columns
+options["RF_Rate"] = rf_rate
+options = options.drop(treasury_maturities, axis = 1)
+options = options.drop("Maturity_Closest_TTM", axis = 1)
+
+# Create list with the standard deviation that matches each option's QuoteDate
+hist_vol = []
+for index, row in options.iterrows():
+    hist_vol.append(float(underlying["Historical_Vol"].loc[underlying["Date"] == row.QuoteDate]))
+ 
+# Add hist_vol as a column in the options df
+options["Historical_Vol"] = hist_vol
+
 
 # Create csv file from the options df
 # options.to_csv('options-df.csv', index=False)
