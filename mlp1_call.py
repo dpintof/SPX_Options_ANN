@@ -26,6 +26,7 @@ n_epochs = 40
 # Create DataFrame (df) for calls
 df = pd.read_csv("options-df.csv")
 # df = df.dropna(axis=0)
+df = df.drop(columns=['Bid', 'Ask'])
 # df.strike_price = df.strike_price / 1000
 call_df = df[df.OptionType == 'call'].drop(['OptionType'], axis=1)
 
@@ -82,7 +83,7 @@ history = model.fit(call_X_train, call_y_train, batch_size = n_batch,
                     epochs = n_epochs, validation_split = 0.01, verbose = 1)
 
 # Save the model's configuration, weights and optimizer's state
-model.save('mlp1_call_1')
+
 
 # LR = 1e-4, batch size = 4096, epochs = n_epochs
 model.compile(loss='mse', optimizer=Adam(lr=1e-4))
@@ -103,7 +104,7 @@ history = model.fit(call_X_train, call_y_train,
                     validation_split = 0.01, verbose=1)
 model.save('mlp1_call_4')
 
-# # SHORT TEST
+# SHORT TEST
 # model.compile(loss='mse', optimizer=Adam(lr=1e-6))
 # history = model.fit(call_X_train, call_y_train, 
 #                     batch_size=4096, epochs=2, validation_split = 0.01, verbose=1)
@@ -118,4 +119,3 @@ model.save('mlp1_call_4')
 
 # # Mean of the square of the differences (MSE)
 # np.mean(np.square(diff))
-

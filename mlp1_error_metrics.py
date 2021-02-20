@@ -15,6 +15,7 @@ from scipy.stats import norm
 
 df = pd.read_csv("options-df.csv")
 # df = df.dropna(axis=0)
+df = df.drop(columns=['Bid', 'Ask'])
 # df.strike_price = df.strike_price / 1000
 call_df = df[df.OptionType == 'call'].drop(['OptionType'], axis=1)
 put_df = df[df.OptionType == 'put'].drop(['OptionType'], axis=1)
@@ -27,9 +28,11 @@ put_X_train, put_X_test, put_y_train, put_y_test = train_test_split(call_df.drop
 
 
 call = load_model('mlp1_call_3')
+# call = load_model('mlp1_call_5') # TESTING WITH A SMALL SAMPLE
 # put = load_model('mlp1_put_3')
 
 
+# Calculate error metrics
 def black_scholes_call(row):
     S = row.Underlying_Price
     X = row.Strike
@@ -71,16 +74,36 @@ line1 = error_metrics(call_y_test, call.predict(call_X_test).reshape(call_y_test
 line3 = error_metrics(call_y_test, black_scholes_call(call_X_test))
 # line4 = error_metrics(put_y_test, black_scholes_put(put_X_test))
 
-line3.insert(0, np.mean(np.square(call_y_train - black_scholes_call(call_X_train))))
-# line4.insert(0, np.mean(np.square(put_y_train - black_scholes_put(put_X_train))))
+# Add train-MSE to the lists with the other risk metrics
 line1.insert(0, np.mean(np.square(call_y_train - call.predict(call_X_train).reshape(call_y_train.shape[0]))))
 # line2.insert(0, np.mean(np.square(put_y_train - put.predict(put_X_train).reshape(put_y_train.shape[0]))))
+line3.insert(0, np.mean(np.square(call_y_train - black_scholes_call(call_X_train))))
+# line4.insert(0, np.mean(np.square(put_y_train - black_scholes_put(put_X_train))))
 
+metric_names = ["Train - MSE", "MSE", "Bias", "AAPE", "MAPE", "PE5", "PE10", 
+                "PE20"]
 
-# for line in (line1, line2, line3, line4):
-#     print('& {:.2f} & {:.2f} & {:.2f}\% & {:.2f}\% & {:.2f}\% & {:.2f}\% & {:.2f}\% & {:.2f}\% \\\\'.format(*line))
-for line in (line1, line3): # TESTING ONLY FOR CALL MODEL. NEED TO FORMAT THE OUTPUT.
-    print('& {:.2f} & {:.2f} & {:.2f}\% & {:.2f}\% & {:.2f}\% & {:.2f}\% & {:.2f}\% & {:.2f}\% \\\\'.format(*line))  
-for line in (line1, line3):
-    print(line)
-    
+metric_dictionary1 = {metric_names[i]: line1[i] for i in range(len(metric_names))}
+# metric_dictionary2 = {metric_names[i]: line2[i] for i in range(len(metric_names))}
+metric_dictionary3 = {metric_names[i]: line3[i] for i in range(len(metric_names))}
+# metric_dictionary4 = {metric_names[i]: line4[i] for i in range(len(metric_names))}
+
+print("Error metrics for call options, regarding the ANN's test sample and "
+      "respective predictions")
+for key, value in metric_dictionary1.items():
+	    print(f"{key}:", value)
+
+# print("Error metrics for put options, regarding the ANN's test sample and "
+#       "respective predictions")
+# for key, value in metric_dictionary2.items():
+#  	    print(f"{key}:", value)
+
+print("\nError metrics for call options, regarding the ANN's test sample and "
+      "BSM's values")
+for key, value in metric_dictionary3.items():
+	    print(f"{key}:", value)
+        
+# print("\nError metrics for put options, regarding the ANN's test sample and "
+#       "BSM's values")
+# for key, value in metric_dictionary4.items():
+#  	    print(f"{key}:", value)

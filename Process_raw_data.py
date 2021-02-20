@@ -14,10 +14,10 @@ import numpy as np
 
 # Underlying
 # Create dataframe (df) for the data of the underlying from August to September 2018
-underlying1 = pd.read_csv("Data/Underlying/SPX_August-September_2018.csv")
+underlying1 = pd.read_csv("Raw data/Underlying/SPX_August-September_2018.csv")
 
 # Create df for the data of the underlying from July to August 2019
-underlying2 = pd.read_csv("Data/Underlying/SPX_July-August_2019.csv")
+underlying2 = pd.read_csv("Raw Data/Underlying/SPX_July-August_2019.csv")
 
 # Create df with all underlying data
 underlying = underlying1.append(underlying2)
@@ -38,10 +38,10 @@ underlying['Historical_Vol'] = underlying[" Close"].rolling(20).apply(lambda x:
     
 # Treasury rates
 # Create df for treasury rates from August to September 2018
-treasury1 = pd.read_csv("Data/Treasury/Treasury_rates_August-September_2018.csv")
+treasury1 = pd.read_csv("Raw data/Treasury/Treasury_rates_August-September_2018.csv")
 
 # Create df for treasury rates from July to August 2019
-treasury2 = pd.read_csv("Data/Treasury/Treasury_rates_July-August_2019.csv")
+treasury2 = pd.read_csv("Raw data/Treasury/Treasury_rates_July-August_2019.csv")
 
 # Create df with all treasury rates data
 treasury = treasury1.append(treasury2)
@@ -59,7 +59,7 @@ treasury['Date'] = pd.to_datetime(treasury['Date'])
 
 # Options
 # Create df for September 2018 options data
-options1 = pd.read_csv("Data/Options/SPX_20180904_to_20180928.csv")
+options1 = pd.read_csv("Raw data/Options/SPX_20180904_to_20180928.csv")
 
 # Remove unnecessary columns
 options1 = options1.drop(["DNID", 'UnderlyingSymbol', 'UnderlyingPrice', 
@@ -73,18 +73,19 @@ options1 = options1.drop(["DNID", 'UnderlyingSymbol', 'UnderlyingPrice',
                           'OptionAlias'], axis = 1)
 
 # Set the path to files for options from August 2019
-p = Path("Data/Options")
+p = Path("Raw data/Options")
 
 # Create a list of the option files from August 2019
 options2_files = list(p.glob('L2_options_201908*.csv'))
 
 # Creates df from all files
 options2 = pd.concat([pd.read_csv(f) for f in options2_files]) 
-# options2 = pd.read_csv("Data/Options/L2_options_20190801.csv") # FOR TESTING 
+# options2 = pd.read_csv("Raw data/Options/L2_options_20190801.csv") # FOR TESTING 
     # THE CODE WITH A SMALL SAMPLE
 
-# Deletes rows for options with an underlying asset that isn't SPX
-options2 = options2.loc[options2['UnderlyingSymbol'] == "SPX"]
+# Deletes rows for options with an underlying asset that isn't SPX or SPXW
+options2 = options2.loc[options2['UnderlyingSymbol'].isin(["SPX", "SPXW"])]
+
 
 # Remove unnecessary columns
 options2 = options2.drop(['UnderlyingSymbol', 'UnderlyingPrice', 'Exchange', 
@@ -98,7 +99,9 @@ options2 = options2.rename(columns = {'DataDate': 'QuoteDate', "Type": "OptionTy
 # Create df with all options data
 options = options1.append(options2)
 # options = options1 # FOR TESTING THE CODE WITH A SMALL SAMPLE
-# options = options.iloc[1052:1546] # FOR TESTING THE CODE WITH A SMALL SAMPLE
+# options = options.iloc[1052:1546] # FOR TESTING THE CODE WITH A SMALL SAMPLE 
+    # FOR WHICH THE TIME TO MATURITY IS CLOSE TO 2 YEARS. WE DON'T HAVE 2 YEAR
+    # TREASURY RATES FOR SOME DATES.
 
 # Create function that returns the number of years between two dates
 def years_between(d1, d2):
@@ -204,7 +207,8 @@ for index, row in options.iterrows():
 # Add column of closing price of the underlying for each QuoteDate and drop
     # more unnecessary columns
 options["Underlying_Price"] = underlying_price
-options = options.drop(["Expiration", "QuoteDate", "Bid", "Ask"], axis = 1)
+# options = options.drop(["Expiration", "QuoteDate", "Bid", "Ask"], axis = 1)
+options = options.drop(["Expiration", "QuoteDate"], axis = 1)
 
 
 # Create csv file from the options df
