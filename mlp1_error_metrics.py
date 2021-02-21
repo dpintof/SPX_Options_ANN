@@ -15,7 +15,7 @@ from scipy.stats import norm
 
 df = pd.read_csv("options-df.csv")
 # df = df.dropna(axis=0)
-df = df.drop(columns=['Bid', 'Ask'])
+df = df.drop(columns=['Bid', 'Ask', "QuoteDate"])
 # df.strike_price = df.strike_price / 1000
 call_df = df[df.OptionType == 'call'].drop(['OptionType'], axis=1)
 put_df = df[df.OptionType == 'put'].drop(['OptionType'], axis=1)
@@ -27,8 +27,8 @@ put_X_train, put_X_test, put_y_train, put_y_test = train_test_split(call_df.drop
                             axis = 1), call_df.Average_Price, test_size = 0.01)
 
 
-call = load_model('mlp1_call_3')
-# call = load_model('mlp1_call_5') # TESTING WITH A SMALL SAMPLE
+# call = load_model('mlp1_call_3')
+call = load_model('mlp1_call_5') # TESTING WITH A SMALL SAMPLE
 # put = load_model('mlp1_put_3')
 
 
@@ -80,7 +80,7 @@ line1.insert(0, np.mean(np.square(call_y_train - call.predict(call_X_train).resh
 line3.insert(0, np.mean(np.square(call_y_train - black_scholes_call(call_X_train))))
 # line4.insert(0, np.mean(np.square(put_y_train - black_scholes_put(put_X_train))))
 
-metric_names = ["Train - MSE", "MSE", "Bias", "AAPE", "MAPE", "PE5", "PE10", 
+metric_names = ["Train MSE", "MSE", "Bias", "AAPE", "MAPE", "PE5", "PE10", 
                 "PE20"]
 
 metric_dictionary1 = {metric_names[i]: line1[i] for i in range(len(metric_names))}
