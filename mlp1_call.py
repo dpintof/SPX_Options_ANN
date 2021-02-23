@@ -13,7 +13,7 @@ from keras.layers import Dense, LeakyReLU, BatchNormalization
 # from keras.callbacks import TensorBoard
 from keras.optimizers import Adam
 import pandas as pd
-import numpy as np
+# import numpy as np
 from sklearn.model_selection import train_test_split
 
 
@@ -67,49 +67,49 @@ for _ in range(layers - 1):
 model.add(Dense(1, activation='relu')) # Define output layer?
 
 
-# # Configure the learning process, train the model and save model, with 
-#     # different learning rates, batch sizes number of epochs.
+# Configure the learning process, train the model and save model, with 
+    # different learning rates, batch sizes number of epochs.
     
-# # Configure the learning process of the model with a loss function and an 
-#     # optimizer. The optimizer changes the weights in order to minimize the 
-#     # loss function. In this case the Adam optimizer will use the default 
-#     # learning rate (LR) of 1e-3
-# model.compile(loss = 'mse', optimizer = Adam())
-# # model.summary()
-# # len(model.layers) # number of layers in the model/network
+# Configure the learning process of the model with a loss function and an 
+    # optimizer. The optimizer changes the weights in order to minimize the 
+    # loss function. In this case the Adam optimizer will use the default 
+    # learning rate (LR) of 1e-3
+model.compile(loss = 'mse', optimizer = Adam())
+# model.summary()
+# len(model.layers) # number of layers in the model/network
 
-# # Train the model with batch_size = n_batch. See fit() method's arguments: 
-#     # https://faroit.com/keras-docs/2.0.2/models/sequential/
-# history = model.fit(call_X_train, call_y_train, batch_size = n_batch, 
-#                     epochs = n_epochs, validation_split = 0.01, verbose = 1)
+# Train the model with batch_size = n_batch. See fit() method's arguments: 
+    # https://faroit.com/keras-docs/2.0.2/models/sequential/
+history = model.fit(call_X_train, call_y_train, batch_size = n_batch, 
+                    epochs = n_epochs, validation_split = 0.01, verbose = 1)
 
-# # Save the model's configuration, weights and optimizer's state
+# Save the model's configuration, weights and optimizer's state
+model.save('mlp1_call_1')
 
+# LR = 1e-4, batch size = 4096, epochs = n_epochs
+model.compile(loss='mse', optimizer=Adam(lr=1e-4))
+history = model.fit(call_X_train, call_y_train, batch_size=4096, 
+                    epochs=n_epochs, validation_split = 0.01, verbose=1)
+model.save('mlp1_call_2')
 
-# # LR = 1e-4, batch size = 4096, epochs = n_epochs
-# model.compile(loss='mse', optimizer=Adam(lr=1e-4))
-# history = model.fit(call_X_train, call_y_train, batch_size=4096, 
-#                     epochs=n_epochs, validation_split = 0.01, verbose=1)
-# model.save('mlp1_call_2')
+# LR = 1e-5, batch size = 4096, epochs = 10
+model.compile(loss='mse', optimizer=Adam(lr=1e-5))
+history = model.fit(call_X_train, call_y_train, 
+                    batch_size=4096, epochs=10, validation_split = 0.01, verbose=1)
+model.save('mlp1_call_3')
 
-# # LR = 1e-5, batch size = 4096, epochs = 10
-# model.compile(loss='mse', optimizer=Adam(lr=1e-5))
-# history = model.fit(call_X_train, call_y_train, 
-#                     batch_size=4096, epochs=10, validation_split = 0.01, verbose=1)
-# model.save('mlp1_call_3')
-
-# # LR = 1e-6, batch size = 4096, epochs = 10
-# model.compile(loss='mse', optimizer=Adam(lr=1e-6))
-# history = model.fit(call_X_train, call_y_train, 
-#                     batch_size=4096, epochs=10, 
-#                     validation_split = 0.01, verbose=1)
-# model.save('mlp1_call_4')
-
-# SHORT TEST
+# LR = 1e-6, batch size = 4096, epochs = 10
 model.compile(loss='mse', optimizer=Adam(lr=1e-6))
 history = model.fit(call_X_train, call_y_train, 
-                    batch_size=4096, epochs=2, validation_split = 0.01, verbose=1)
-model.save('mlp1_call_5')
+                    batch_size=4096, epochs=10, 
+                    validation_split = 0.01, verbose=1)
+model.save('mlp1_call_4')
+
+# SHORT TEST
+# model.compile(loss='mse', optimizer=Adam(lr=1e-6))
+# history = model.fit(call_X_train, call_y_train, 
+#                     batch_size=4096, epochs=2, validation_split = 0.01, verbose=1)
+# model.save('mlp1_call_5')
 
 
 # # Generate output predictions for the input test sample

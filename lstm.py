@@ -23,8 +23,6 @@ df = pd.read_csv("options-df.csv")
 # df = df.dropna(axis=0)
 df = df.drop(columns=['Historical_Vol', "Underlying_Price", "Bid", "Ask"])
 # df.strike_price = df.strike_price / 1000
-# call_df = df[df.OptionType == 'call'].drop(['OptionType'], axis=1)
-# put_df = df[df.OptionType == 'put'].drop(['OptionType'], axis=1)
 underlying = pd.read_csv('underlying_df.csv')
 
 
@@ -103,57 +101,45 @@ call_model = make_model()
 put_model = make_model()
 # call_model.summary()
 
-## call_model.compile(optimizer=Adam(lr=1e-2), loss='mse')
-# history = call_model.fit(call_X_train, call_y_train, 
-#                     batch_size=n_batch, epochs=10, 
-#                     validation_split = 0.01,
-#                     callbacks=[TensorBoard()],
-#                     verbose=1)
-# call_model.save('saved-models/20191207-call-lstm-v1.h5')
+call_model.compile(optimizer=Adam(lr=1e-2), loss='mse')
+history = call_model.fit(call_X_train, call_y_train, 
+                    batch_size=n_batch, epochs=10, 
+                    validation_split = 0.01, verbose=1)
+call_model.save('lstm_call_1')
 
-# call_model.compile(optimizer=Adam(lr=1e-3), loss='mse')
-# history = call_model.fit(call_X_train, call_y_train, 
-#                     batch_size=n_batch, epochs=5, 
-#                     validation_split = 0.01,
-#                     callbacks=[TensorBoard()],
-#                     verbose=1)
-# call_model.save('saved-models/20191207-call-lstm-v2.h5')
+call_model.compile(optimizer=Adam(lr=1e-3), loss='mse')
+history = call_model.fit(call_X_train, call_y_train, 
+                    batch_size=n_batch, epochs=5, 
+                    validation_split = 0.01, verbose=1)
+call_model.save('lstm_call_2')
 
-# call_model.compile(optimizer=Adam(lr=1e-4), loss='mse')
-# history = call_model.fit(call_X_train, call_y_train, 
-#                     batch_size=n_batch, epochs=5, 
-#                     validation_split = 0.01,
-#                     callbacks=[TensorBoard()],
-#                     verbose=1)
-# call_model.save('saved-models/20191207-call-lstm-v3.h5')
+call_model.compile(optimizer=Adam(lr=1e-4), loss='mse')
+history = call_model.fit(call_X_train, call_y_train, 
+                    batch_size=n_batch, epochs=5, 
+                    validation_split = 0.01, verbose=1)
+call_model.save('lstm_call_3')
 
-# put_model.compile(optimizer=Adam(lr=1e-2), loss='mse')
-# history = put_model.fit(put_X_train, put_y_train, 
-#                     batch_size=n_batch, epochs=10, 
-#                     validation_split = 0.01,
-#                     callbacks=[TensorBoard()],
-#                     verbose=1)
-# put_model.save('saved-models/20191207-put-lstm-v1.h5')
+put_model.compile(optimizer=Adam(lr=1e-2), loss='mse')
+history = put_model.fit(put_X_train, put_y_train, 
+                    batch_size=n_batch, epochs=10, 
+                    validation_split = 0.01, verbose=1)
+put_model.save('lstm_put_1')
 
-# put_model.compile(optimizer=Adam(lr=1e-3), loss='mse')
-# history = put_model.fit(put_X_train, put_y_train, 
-#                     batch_size=n_batch, epochs=5, 
-#                     validation_split = 0.01,
-#                     callbacks=[TensorBoard()],
-#                     verbose=1)
-# put_model.save('saved-models/20191207-put-lstm-v2.h5')
+put_model.compile(optimizer=Adam(lr=1e-3), loss='mse')
+history = put_model.fit(put_X_train, put_y_train, 
+                    batch_size=n_batch, epochs=5, 
+                    validation_split = 0.01, verbose=1)
+put_model.save('lstm_put_2')
 
-# put_model.compile(optimizer=Adam(lr=1e-4), loss='mse')
-# history = put_model.fit(put_X_train, put_y_train, 
-#                     batch_size=n_batch, epochs=5, 
-#                     validation_split = 0.01,
-#                     callbacks=[TensorBoard()],
-#                     verbose=1)
-# put_model.save('saved-models/20191207-put-lstm-v3.h5')
+put_model.compile(optimizer=Adam(lr=1e-4), loss='mse')
+history = put_model.fit(put_X_train, put_y_train, 
+                    batch_size=n_batch, epochs=5, 
+                    validation_split = 0.01, verbose=1)
+put_model.save('lstm_put_3')
 
 # SHORT TEST
-call_model.compile(loss='mse', optimizer=Adam(lr=1e-6))
-history = call_model.fit(call_X_train, call_y_train, 
-                batch_size=4096, epochs=2, validation_split = 0.01, verbose=1)
-call_model.save('lstm_call_5')
+# call_model.compile(loss='mse', optimizer=Adam(lr=1e-6))
+# history = call_model.fit(call_X_train, call_y_train, 
+#                 batch_size=4096, epochs=2, validation_split = 0.01, verbose=1)
+# call_model.save('lstm_call_5')
 

@@ -32,7 +32,6 @@ call = load_model('mlp1_call_5') # TESTING WITH A SMALL SAMPLE
 # put = load_model('mlp1_put_3')
 
 
-# Calculate error metrics
 def black_scholes_call(row):
     S = row.Underlying_Price
     X = row.Strike
@@ -55,7 +54,6 @@ def black_scholes_put(row):
     p  = norm.cdf(-d2) * X * np.exp(-r * T) - S * norm.cdf(-d1)
     return p
 
-
 def error_metrics(actual, predicted):
     diff = actual - predicted
     mse = np.mean(np.square(diff))
@@ -69,6 +67,7 @@ def error_metrics(actual, predicted):
     return [mse, bias, aape, mape, pe5, pe10, pe20]
 
 
+# Calculate error metrics
 line1 = error_metrics(call_y_test, call.predict(call_X_test).reshape(call_y_test.shape[0]))
 # line2 = error_metrics(put_y_test, put.predict(put_X_test).reshape(put_y_test.shape[0]))
 line3 = error_metrics(call_y_test, black_scholes_call(call_X_test))
@@ -93,7 +92,7 @@ print("Error metrics for call options, regarding the ANN's test sample and "
 for key, value in metric_dictionary1.items():
 	    print(f"{key}:", value)
 
-# print("Error metrics for put options, regarding the ANN's test sample and "
+# print("\nError metrics for put options, regarding the ANN's test sample and "
 #       "respective predictions")
 # for key, value in metric_dictionary2.items():
 #  	    print(f"{key}:", value)

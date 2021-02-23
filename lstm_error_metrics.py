@@ -16,76 +16,72 @@ from keras.models import load_model
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
+# from scipy.stats import norm
 
 
-# In[2]:
-
-
-df = pd.read_csv('../options-df-sigma.csv')
-df = df.dropna(axis=0)
-df = df.drop(columns=['exdate', 'impl_volatility', 'volume', 'open_interest', 'sigma_20'])
-df.strike_price = df.strike_price / 1000
-call_df = df[df.cp_flag == 'C'].drop(['cp_flag'], axis=1)
-put_df = df[df.cp_flag == 'P'].drop(['cp_flag'], axis=1)
-underlying = pd.read_csv('../daily-closing-prices.csv')
 N_TIMESTEPS = 20
-padded = np.insert(underlying.close.values, 0, np.array([np.nan] * N_TIMESTEPS))
+
+df = pd.read_csv("options-df.csv")
+# df = df.dropna(axis=0)
+df = df.drop(columns=['Historical_Vol', "Underlying_Price", "Bid", "Ask"])
+# df.strike_price = df.strike_price / 1000
+underlying = pd.read_csv('underlying_df.csv')
+
+
+padded = np.insert(underlying[" Close"].values, 0, np.array([np.nan] * N_TIMESTEPS))
+
 rolled = np.column_stack([np.roll(padded, i) for i in range(N_TIMESTEPS)])
 rolled = rolled[~np.isnan(rolled).any(axis=1)]
-rolled = np.column_stack((underlying.date.values[N_TIMESTEPS - 1:], rolled))
+rolled = np.column_stack((underlying.Date.values[N_TIMESTEPS - 1:], rolled))
 price_history = pd.DataFrame(data=rolled)
-joined = df.join(price_history.set_index(0), on='date')
-call_df = joined[joined.cp_flag == 'C'].drop(['cp_flag'], axis=1)
-put_df = joined[joined.cp_flag == 'P'].drop(['cp_flag'], axis=1)
-call_df = call_df.drop(columns=['date'])
-put_df = put_df.drop(columns=['date'])
-call_X_train, call_X_test, call_y_train, call_y_test = train_test_split(call_df.drop(['best_bid', 'best_offer'], axis=1).values,
-                                                                        ((call_df.best_bid + call_df.best_offer) / 2).values,
-                                                                        test_size=0.01, random_state=42)
-put_X_train, put_X_test, put_y_train, put_y_test = train_test_split(put_df.drop(['best_bid', 'best_offer'], axis=1).values,
-                                                                    ((put_df.best_bid + put_df.best_offer) / 2).values,
-                                                                    test_size=0.01, random_state=42)
-call_X_train = [call_X_train[:, -N_TIMESTEPS:].reshape(call_X_train.shape[0], N_TIMESTEPS, 1), call_X_train[:, :4]]
-call_X_test = [call_X_test[:, -N_TIMESTEPS:].reshape(call_X_test.shape[0], N_TIMESTEPS, 1), call_X_test[:, :4]]
-put_X_train = [put_X_train[:, -N_TIMESTEPS:].reshape(put_X_train.shape[0], N_TIMESTEPS, 1), put_X_train[:, :4]]
-put_X_test = [put_X_test[:, -N_TIMESTEPS:].reshape(put_X_test.shape[0], N_TIMESTEPS, 1), put_X_test[:, :4]]
+
+joined = df.join(price_history.set_index(0), on='QuoteDate')
+
+call_df = joined[joined.OptionType == 'call'].drop(['OptionType'], axis=1)
+call_df = call_df.drop(columns=['QuoteDate'])
+put_df = joined[joined.OptionType == 'put'].drop(['OptionType'], axis=1)
+put_df = put_df.drop(columns=['QuoteDate'])
+
+call_X_train, call_X_test, call_y_train, call_y_test = train_test_split(call_df.drop(["Average_Price"], 
+    axis=1).values, call_df.Average_Price.values, test_size=0.01)
+put_X_train, put_X_test, put_y_train, put_y_test = train_test_split(put_df.drop(["Average_Price"], 
+    axis=1).values, put_df.Average_Price.values, test_size=0.01)
+
+call_X_train = [call_X_train[:, -N_TIMESTEPS:].reshape(call_X_train.shape[0], 
+                                        N_TIMESTEPS, 1), call_X_train[:, :4]]
+call_X_test = [call_X_test[:, -N_TIMESTEPS:].reshape(call_X_test.shape[0], 
+                                        N_TIMESTEPS, 1), call_X_test[:, :4]]
+put_X_train = [put_X_train[:, -N_TIMESTEPS:].reshape(put_X_train.shape[0], 
+                                        N_TIMESTEPS, 1), put_X_train[:, :4]]
+put_X_test = [put_X_test[:, -N_TIMESTEPS:].reshape(put_X_test.shape[0], 
+                                        N_TIMESTEPS, 1), put_X_test[:, :4]]
 
 
-# In[3]:
+call_model = load_model('lstm_call_3')
+put_model = load_model('lstm_put_3')
 
 
-call_model = load_model('saved-models/20191207-call-lstm-v3.h5')
-put_model = load_model('saved-models/20191207-put-lstm-v3.h5')
+# def black_scholes_call(row):
+#     S = row.Underlying_Price
+#     X = row.Strike
+#     T = row.Time_to_Maturity
+#     r = row.RF_Rate / 100
+#     σ = row.Historical_Vol
+#     d1 = (np.log(S / X) + (r + (σ ** 2) / 2) * T) / (σ * (T ** .5))
+#     d2 = d1 - σ * (T ** .5)
+#     c = S * norm.cdf(d1) - X * np.exp(-r * T) * norm.cdf(d2)
+#     return c
 
-
-# In[8]:
-
-
-from scipy.stats import norm
-def black_scholes(row):
-    S = row.closing_price
-    X = row.strike_price
-    T = row.date_ndiff / 365
-    r = row.treasury_rate / 100
-    σ = row.sigma_20
-    d1 = (np.log(S / X) + (r + (σ ** 2) / 2) * T) / (σ * (T ** .5))
-    d2 = d1 - σ * (T ** .5)
-    C = S * norm.cdf(d1) - X * np.exp(-r * T) * norm.cdf(d2)
-    return C
-def black_scholes_put(row):
-    S = row.closing_price
-    X = row.strike_price
-    T = row.date_ndiff / 365
-    r = row.treasury_rate / 100
-    σ = row.sigma_20
-    d1 = (np.log(S / X) + (r + (σ ** 2) / 2) * T) / (σ * (T ** .5))
-    d2 = d1 - σ * (T ** .5)
-    P  = norm.cdf(-d2) * X * np.exp(-r * T) - S * norm.cdf(-d1)
-    return P
-
-
-# In[4]:
-
+# def black_scholes_put(row):
+#     S = row.Underlying_Price
+#     X = row.Strike
+#     T = row.Time_to_Maturity
+#     r = row.RF_Rate / 100
+#     σ = row.Historical_Vol
+#     d1 = (np.log(S / X) + (r + (σ ** 2) / 2) * T) / (σ * (T ** .5))
+#     d2 = d1 - σ * (T ** .5)
+#     p  = norm.cdf(-d2) * X * np.exp(-r * T) - S * norm.cdf(-d1)
+#     return p
 
 def error_metrics(actual, predicted):
     diff = actual - predicted
@@ -99,35 +95,31 @@ def error_metrics(actual, predicted):
     pe20 = 100 * sum(np.abs(rel) < 0.20) / rel.shape[0]
     return [mse, bias, aape, mape, pe5, pe10, pe20]
 
-
-# In[5]:
-
-
 line1 = error_metrics(call_y_test, call_model.predict(call_X_test, batch_size=4096).reshape(call_y_test.shape[0]))
 line2 = error_metrics(put_y_test, put_model.predict(put_X_test, batch_size=4096).reshape(put_y_test.shape[0]))
 
+line1.insert(0, np.mean(np.square(call_y_train - call_model.predict(call_X_train).reshape(call_y_train.shape[0]))))
+line2.insert(0, np.mean(np.square(put_y_train - put_model.predict(put_X_train).reshape(put_y_train.shape[0]))))
 
-# In[16]:
+# call_model.evaluate(call_X_train, call_y_train, batch_size=4096)
+# put_model.evaluate(put_X_train, put_y_train, batch_size=4096)
 
+metric_names = ["Train MSE", "MSE", "Bias", "AAPE", "MAPE", "PE5", "PE10", 
+                "PE20"]
 
-call_model.evaluate(call_X_train, call_y_train, batch_size=4096)
+metric_dictionary1 = {metric_names[i]: line1[i] for i in range(len(metric_names))}
+metric_dictionary2 = {metric_names[i]: line2[i] for i in range(len(metric_names))}
 
+print("Error metrics for call options, regarding the ANN's test sample and "
+      "respective predictions")
+for key, value in metric_dictionary1.items():
+	    print(f"{key}:", value)
 
-# In[17]:
+print("\nError metrics for put options, regarding the ANN's test sample and "
+      "respective predictions")
+for key, value in metric_dictionary2.items():
+ 	    print(f"{key}:", value)
 
-
-put_model.evaluate(put_X_train, put_y_train, batch_size=4096)
-
-
-# In[18]:
-
-
-for line in ([30.608, *line1], [22.810, *line2]):
-    print('& {:.2f} & {:.2f} & {:.2f}\% & {:.2f}\% & {:.2f}\% & {:.2f}\% & {:.2f}\% & {:.2f}\% \\\\'.format(*line))
-
-
-# In[ ]:
-
-
-
+# for line in ([30.608, *line1], [22.810, *line2]):
+#     print('& {:.2f} & {:.2f} & {:.2f}\% & {:.2f}\% & {:.2f}\% & {:.2f}\% & {:.2f}\% & {:.2f}\% \\\\'.format(*line))
 

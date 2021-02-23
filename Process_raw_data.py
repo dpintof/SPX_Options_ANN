@@ -19,22 +19,26 @@ underlying1 = pd.read_csv("Raw data/Underlying/SPX_August-September_2018.csv")
 # Create df for the data of the underlying from July to August 2019
 underlying2 = pd.read_csv("Raw Data/Underlying/SPX_July-August_2019.csv")
 
+# Convert dates on Date columns to datetime64
+underlying1['Date'] = pd.to_datetime(underlying1['Date'])
+underlying2['Date'] = pd.to_datetime(underlying2['Date'])
+
+# Sort underlying df by Date column, in ascending order
+underlying1 = underlying1.sort_values(by='Date')
+underlying2 = underlying2.sort_values(by='Date')
+
+# Creates new column with the standard deviation of the returns from the past 20 days
+underlying1['Historical_Vol'] = underlying1[" Close"].rolling(20).apply(lambda x:
+                                                (np.diff(x) / x[:-1]).std())
+underlying2['Historical_Vol'] = underlying2[" Close"].rolling(20).apply(lambda x:
+                                                (np.diff(x) / x[:-1]).std())
+
 # Create df with all underlying data
 underlying = underlying1.append(underlying2)
 
 # Remove unnecessary columns
 underlying = underlying.drop([" Open", " High", " Low"], axis = 1)
 
-# Convert data on Date column of underlying df to datetime64
-underlying['Date'] = pd.to_datetime(underlying['Date'])
-
-# Sort underlying df by Date column, in ascending order
-underlying = underlying.sort_values(by='Date')
-    
-# Creates a new column with the standard deviation of the returns from the past 20 days
-underlying['Historical_Vol'] = underlying[" Close"].rolling(20).apply(lambda x:
-                                                (np.diff(x) / x[:-1]).std())
-    
 # Create csv file from the underlying df
 underlying.to_csv('underlying_df.csv', index=False)
 
@@ -82,8 +86,8 @@ p = Path("Raw data/Options")
 options2_files = list(p.glob('L2_options_201908*.csv'))
 
 # Creates df from all files
-# options2 = pd.concat([pd.read_csv(f) for f in options2_files]) 
-options2 = pd.read_csv("Raw data/Options/L2_options_20190801.csv") # FOR TESTING 
+options2 = pd.concat([pd.read_csv(f) for f in options2_files]) 
+# options2 = pd.read_csv("Raw data/Options/L2_options_20190801.csv") # FOR TESTING 
 #     THE CODE WITH A SMALL SAMPLE
 
 # Deletes rows for options with an underlying asset that isn't SPX or SPXW
@@ -100,8 +104,8 @@ options2 = options2.drop(['UnderlyingSymbol', 'UnderlyingPrice', 'Exchange',
 options2 = options2.rename(columns = {'DataDate': 'QuoteDate', "Type": "OptionType"})
 
 # Create df with all options data
-# options = options1.append(options2)
-options = options1 # FOR TESTING THE CODE WITH A SMALL SAMPLE
+options = options1.append(options2)
+# options = options1 # FOR TESTING THE CODE WITH A SMALL SAMPLE
 # options = options.iloc[1052:1546] # FOR TESTING THE CODE WITH A SMALL SAMPLE 
     # FOR WHICH THE TIME TO MATURITY IS CLOSE TO 2 YEARS. WE DON'T HAVE 2 YEAR
     # TREASURY RATES FOR SOME DATES.
@@ -210,9 +214,9 @@ for index, row in options.iterrows():
 # Add column of closing price of the underlying for each QuoteDate and drop
     # more unnecessary columns
 options["Underlying_Price"] = underlying_price
-# options = options.drop(["Expiration", "QuoteDate"], axis = 1)
 options = options.drop(["Expiration"], axis = 1)
 
 
 # Create csv file from the options df
 options.to_csv('options-df.csv', index=False)
+
