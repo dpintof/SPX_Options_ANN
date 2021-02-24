@@ -30,12 +30,15 @@ df = pd.read_csv("options-df.csv")
 df = df.drop(columns=['Bid', 'Ask', "QuoteDate"])
 # df.strike_price = df.strike_price / 1000
 call_df = df[df.OptionType == 'call'].drop(['OptionType'], axis=1)
+put_df = df[df.OptionType == 'put'].drop(['OptionType'], axis=1)
 
 
-# Split call_df into random train and test subsets, for inputs (X) and output (y)
+# Split options' dfs into random train and test subsets, for inputs (X) and output (y)
 call_X_train, call_X_test, call_y_train, call_y_test = train_test_split(call_df.drop(["Average_Price"],
                             axis = 1), call_df.Average_Price, test_size = 0.01)
-
+put_X_train, put_X_test, put_y_train, put_y_test = train_test_split(put_df.drop(["Average_Price"],
+                            axis = 1), put_df.Average_Price, test_size = 0.01)
+###########
 
 # Create a Sequential model that is a linear stack of layers
 model = Sequential()

@@ -216,7 +216,6 @@ for index, row in options.iterrows():
 options["Underlying_Price"] = underlying_price
 options = options.drop(["Expiration"], axis = 1)
 
-
 # Create csv file from the options df
 options.to_csv('options-df.csv', index=False)
 

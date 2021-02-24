@@ -53,4 +53,3 @@ print("\nError metrics for put options, regarding the average price between "
 for key, value in metric_dictionary2.items():
  	    print(f"{key}:", value)
 
-call.loc[call['Average_Price'] == 0]

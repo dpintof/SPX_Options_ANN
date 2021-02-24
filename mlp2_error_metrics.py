@@ -29,8 +29,8 @@ call_X_train, call_X_test, call_y_train, call_y_test = train_test_split(call_df.
 #                                                                     test_size=0.01, random_state=42)
 
 
-# call = load_model('mlp2-call60.h5')
-call = load_model('mlp2_call_5') # TESTING WITH A SMALL SAMPLE
+call = load_model('mlp2_call_3')
+# call = load_model('mlp2_call_5') # TESTING WITH A SMALL SAMPLE
 # put = load_model('mlp2-put60.h5')
 
 

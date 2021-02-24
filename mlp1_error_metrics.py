@@ -27,8 +27,8 @@ put_X_train, put_X_test, put_y_train, put_y_test = train_test_split(call_df.drop
                             axis = 1), call_df.Average_Price, test_size = 0.01)
 
 
-# call = load_model('mlp1_call_3')
-call = load_model('mlp1_call_5') # TESTING WITH A SMALL SAMPLE
+call = load_model('mlp1_call_3')
+# call = load_model('mlp1_call_5') # TESTING WITH A SMALL SAMPLE
 # put = load_model('mlp1_put_3')
 
 
