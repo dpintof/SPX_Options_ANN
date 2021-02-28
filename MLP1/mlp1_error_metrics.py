@@ -35,27 +35,27 @@ call = load_model('Saved_models/mlp1_call_3')
 put = load_model('Saved_models/mlp1_put_3')
 
 
-def black_scholes_call(row):
-    S = row.Underlying_Price
-    X = row.Strike
-    T = row.Time_to_Maturity
-    r = row.RF_Rate / 100
-    σ = row.Historical_Vol
-    d1 = (np.log(S / X) + (r + (σ ** 2) / 2) * T) / (σ * (T ** .5))
-    d2 = d1 - σ * (T ** .5)
-    c = S * norm.cdf(d1) - X * np.exp(-r * T) * norm.cdf(d2)
-    return c
+# def black_scholes_call(row):
+#     S = row.Underlying_Price
+#     X = row.Strike
+#     T = row.Time_to_Maturity
+#     r = row.RF_Rate / 100
+#     σ = row.Historical_Vol
+#     d1 = (np.log(S / X) + (r + (σ ** 2) / 2) * T) / (σ * (T ** .5))
+#     d2 = d1 - σ * (T ** .5)
+#     c = S * norm.cdf(d1) - X * np.exp(-r * T) * norm.cdf(d2)
+#     return c
 
-def black_scholes_put(row):
-    S = row.Underlying_Price
-    X = row.Strike
-    T = row.Time_to_Maturity
-    r = row.RF_Rate / 100
-    σ = row.Historical_Vol
-    d1 = (np.log(S / X) + (r + (σ ** 2) / 2) * T) / (σ * (T ** .5))
-    d2 = d1 - σ * (T ** .5)
-    p  = norm.cdf(-d2) * X * np.exp(-r * T) - S * norm.cdf(-d1)
-    return p
+# def black_scholes_put(row):
+#     S = row.Underlying_Price
+#     X = row.Strike
+#     T = row.Time_to_Maturity
+#     r = row.RF_Rate / 100
+#     σ = row.Historical_Vol
+#     d1 = (np.log(S / X) + (r + (σ ** 2) / 2) * T) / (σ * (T ** .5))
+#     d2 = d1 - σ * (T ** .5)
+#     p  = norm.cdf(-d2) * X * np.exp(-r * T) - S * norm.cdf(-d1)
+#     return p
 
 def error_metrics(actual, predicted):
     diff = actual - predicted
