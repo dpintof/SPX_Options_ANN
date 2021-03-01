@@ -15,7 +15,7 @@ from os import path
 
 
 basepath = path.dirname(__file__)
-filepath = path.abspath(path.join(basepath, "..", "options-df.csv"))
+filepath = path.abspath(path.join(basepath, "..", "Processed data/options-df.csv"))
 df = pd.read_csv(filepath)
 # df = df.dropna(axis=0)
 df = df.drop(columns=['bid_eod', 'ask_eod', "QuoteDate"])

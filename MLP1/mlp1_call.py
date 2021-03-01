@@ -16,7 +16,6 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from os import path
-# import matplotlib.pyplot as plt
 
 
 # Hyperparameters
@@ -148,18 +147,4 @@ np.savetxt("Saved_models/mlp1_call_4_train_losses.txt",
            numpy__train_loss, delimiter=",")
 np.savetxt("Saved_models/mlp1_call_4_validation_losses.txt", 
            numpy_validation_loss, delimiter=",")
-
-# QUICK TEST
-# model.compile(loss='mse', optimizer=Adam(lr=1e-6))
-# history = model.fit(call_X_train, call_y_train, batch_size=4096, epochs=5, 
-#                     validation_split = 0.01, verbose=1)
-# model.save('Saved_models/mlp1_call_5')
-# train_loss = history.history["loss"]
-# validation_loss = history.history["val_loss"]
-# numpy__train_loss = np.array(train_loss)
-# numpy_validation_loss = np.array(validation_loss)
-# np.savetxt("Saved_models/mlp1_call_5_train_losses.txt", 
-#            numpy__train_loss, delimiter=",")
-# np.savetxt("Saved_models/mlp1_call_5_validation_losses.txt", 
-#            numpy_validation_loss, delimiter=",")
 

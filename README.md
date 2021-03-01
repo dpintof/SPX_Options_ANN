@@ -5,9 +5,16 @@ Work related to the paper Ke and Yang (2019) Option Pricing with Deep Learning. 
 
 Instructions:
 
-1. Run Process_raw_data2.py to create options-df.csv and underlying_df.csv in the "Processed data" folder. It uses data in the "Raw data" folder.
-I recommended using a small sample for testing the data as the current database is huge and takes a long time to process. For a test with a small sample comment line 63 and uncomment line 65.
-	
+~~1. Run Process_raw_data1.py to create options-df.csv and underlying_df.csv in the "Processed data" folder. It uses data in the "Raw data" folder.
+I did not include the database used in this file because it is proprietary. There are comments in the code on how to test it with a small sample.~~
+
+OR
+
+1. Run Process_raw_data2.py to create options-df.csv and underlying_df.csv in the "Processed data" folder. It uses data in the "Raw data" folder. Because some data files are quite large I don't include them in the repository. There are comments in the code on how to run it with the data in the repository (a small sample). The sources of the free raw data are:
+ * Underlying - https://www.wsj.com/market-data/quotes/index/SPX/historical-prices
+ * Options (September 2018 and August 2019, respectively) - https://www.historicaloptiondata.com/files/Batch_PRO_Sample_PHC.zip and https://www.historicaloptiondata.com/files/Sample_L2_2019_August.zip
+ * Treasury Rates - https://www.treasury.gov/resource-center/data-chart-center/interest-rates/pages/TextView.aspx?data=yieldYear&year=2019  
+
 2. MLP1 model (what is explained here also applies to other models): 
 
     2.1. Run mlp1_call.py and mlp1_put.py. Uses the data in the "Processed data" folder.
@@ -34,5 +41,5 @@ I recommended using a small sample for testing the data as the current database 
 
 6. Create graphs showing training and validation losses over epoches:
 
-    6.1. Run ann_loss_graphs.py (still not finished)
+    6.1. Run ann_loss_graphs.py
 

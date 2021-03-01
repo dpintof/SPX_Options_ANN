@@ -23,12 +23,14 @@ from os import path
 N_TIMESTEPS = 20
 
 basepath = path.dirname(__file__)
-filepath = path.abspath(path.join(basepath, "..", "options-df.csv"))
+filepath = path.abspath(path.join(basepath, "..", 
+                                  "Processed data/options-df.csv"))
 options_df = pd.read_csv(filepath)
 # df = df.dropna(axis=0)
-options_df = options_df.drop(columns=['Sigma_20_Days', "Underlying_Price", 
-                                      "bid_eod", "ask_eod"])
-filepath = path.abspath(path.join(basepath, "..", "underlying_df.csv"))
+options_df = options_df.drop(columns=['Sigma_20_Days_Annualized', 
+                                      "Underlying_Price", "bid_eod", "ask_eod"])
+filepath = path.abspath(path.join(basepath, "..", 
+                                  "Processed data/underlying_df.csv"))
 underlying = pd.read_csv(filepath)
 
 

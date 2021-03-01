@@ -10,8 +10,8 @@ import pandas as pd
 import numpy as np
 
 
-call = pd.read_csv("BSM predictions/bsm_call.csv")
-put = pd.read_csv("BSM predictions/bsm_put.csv")
+call = pd.read_csv("BSM_predictions/bsm_call.csv")
+put = pd.read_csv("BSM_predictions/bsm_put.csv")
  
 # Split data into train and test sets
 # call_train = call.sample(frac=0.99)

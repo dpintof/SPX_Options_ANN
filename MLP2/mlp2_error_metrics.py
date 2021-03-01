@@ -16,7 +16,7 @@ from os import path
 
 
 basepath = path.dirname(__file__)
-filepath = path.abspath(path.join(basepath, "..", "options-df.csv"))
+filepath = path.abspath(path.join(basepath, "..", "Processed data/options-df.csv"))
 df = pd.read_csv(filepath)
 # df = df.dropna(axis=0)
 df = df.drop(columns=['Option_Average_Price', "QuoteDate"])
@@ -31,7 +31,8 @@ put_X_train, put_X_test, put_y_train, put_y_test = train_test_split(put_df.drop(
 
 
 call = load_model('Saved_models/mlp2_call_3')
-# call = load_model('mlp2_call_5') # TESTING WITH A SMALL SAMPLE
+# TEST WITH A SMALL SAMPLE
+# call = load_model('mlp2_call_5') 
 put = load_model('Saved_models/mlp2_put_3')
 
 
@@ -82,6 +83,7 @@ matrix(put_y_test, put_y_pred, 0.05)
 def error_scatter(actual, predicted):
     temp = 100 * (actual - predicted) / actual
     plt.scatter(temp.iloc[:,0], temp.iloc[:,1], s=1)
+    # plt.scatter(temp.iloc[:,0], temp.iloc[:,1])
     plt.xlim(-100, 100)
     plt.ylim(-100, 100)
     plt.xlabel('Bid Error %')
@@ -89,11 +91,11 @@ def error_scatter(actual, predicted):
 
 error_scatter(call_y_test, call_y_pred)
 plt.title('MLP2 Call Percent Errors')
-plt.savefig('Saved_graphs/mlp2_call_scatter.png')
+plt.savefig('Saved_models/mlp2_call_scatter.png')
 
 error_scatter(put_y_test, put_y_pred)
 plt.title('MLP2 Put Percent Errors')
-plt.savefig('Saved_graphs/mlp2_put_scatter.png')
+plt.savefig('Saved_models/mlp2_put_scatter.png')
 
 
 def kde_scatter(actual, predicted):
@@ -108,7 +110,8 @@ def kde_scatter(actual, predicted):
     plt.xlabel('Bid Error %')
     plt.ylabel('Ask Error %')
 
-# kde_scatter(call_y_test, call_y_pred) # PROVAVELMENTE ESTÁ A DAR ERRO POIS ESTOU A USAR UM MODELO DE TESTES
+# kde_scatter(call_y_test, call_y_pred) # PROVAVELMENTE ESTÁ A DAR ERRO POIS 
+    # ESTOU A USAR UM MODELO DE TESTES COM POUQUÍSSIMAS OBSERVAÇÕES
 # plt.title('MLP2 Call Percent Errors')
 # plt.savefig('Saved_graphs/mlp2_call_kde.png')
 

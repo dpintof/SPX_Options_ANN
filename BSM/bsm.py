@@ -25,7 +25,7 @@ def black_scholes_call(row):
     X = row.strike
     T = row.Time_to_Maturity
     r = row.RF_Rate / 100
-    σ = row.Sigma_20_Days
+    σ = row.Sigma_20_Days_Annualized
     d1 = (np.log(S / X) + (r + (σ ** 2) / 2) * T) / (σ * (T ** .5))
     d2 = d1 - σ * (T ** .5)
     c = S * norm.cdf(d1) - X * np.exp(-r * T) * norm.cdf(d2)
@@ -36,7 +36,7 @@ def black_scholes_put(row):
     X = row.strike
     T = row.Time_to_Maturity
     r = row.RF_Rate / 100
-    σ = row.Sigma_20_Days
+    σ = row.Sigma_20_Days_Annualized
     d1 = (np.log(S / X) + (r + (σ ** 2) / 2) * T) / (σ * (T ** .5))
     d2 = d1 - σ * (T ** .5)
     p  = norm.cdf(-d2) * X * np.exp(-r * T) - S * norm.cdf(-d1)
@@ -47,12 +47,12 @@ call_df['BSM_Prediction'] = call_df.apply(black_scholes_call, axis=1)
 put_df['BSM_Prediction'] = put_df.apply(black_scholes_put, axis=1)
 
 call_df = call_df.drop(columns=["QuoteDate", "strike", "bid_eod", "ask_eod", 
-                          "Time_to_Maturity", "RF_Rate", "Sigma_20_Days", 
-                          "Underlying_Price"])
+                          "Time_to_Maturity", "RF_Rate", 
+                          "Sigma_20_Days_Annualized", "Underlying_Price"])
 put_df = put_df.drop(columns=["QuoteDate", "strike", "bid_eod", "ask_eod", 
-                          "Time_to_Maturity", "RF_Rate", "Sigma_20_Days", 
-                          "Underlying_Price"])
+                          "Time_to_Maturity", "RF_Rate", 
+                          "Sigma_20_Days_Annualized", "Underlying_Price"])
 
-call_df.to_csv('BSM predictions/bsm_call.csv', index=False)
-put_df.to_csv('BSM predictions/bsm_put.csv', index=False)
+call_df.to_csv('BSM_predictions/bsm_call.csv', index=False)
+put_df.to_csv('BSM_predictions/bsm_put.csv', index=False)
 
