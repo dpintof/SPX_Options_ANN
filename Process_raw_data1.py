@@ -10,6 +10,7 @@ from pathlib import Path
 import pandas as pd
 from datetime import datetime
 import numpy as np
+from tqdm import tqdm
 
 
 # Underlying asset
@@ -39,17 +40,26 @@ underlying.to_csv('Processed data/underlying_df.csv', index=False)
 
 # Treasury rates
 # Create df for treasury rates from January 2004 to December 2019
-treasury = pd.read_csv("Raw data/Treasury/Treasury_rates_2004-2019.csv")  
+# treasury = pd.read_csv("Raw data/Treasury/Treasury_rates_2004-2019.csv")  
+treasury = pd.read_csv("Raw data/Treasury/Treasury_rates_2004-2019.csv", 
+                       index_col = "Date")  
 
 # List with the different maturities, in years, of Treasury bonds
 treasury_maturities = [1/12, 2/12, 3/12, 6/12, 1, 2, 3, 5, 7, 10, 20, 30] 
 
 # Change column names of treasury df
-treasury_columns = ["Date", 1/12, 2/12, 3/12, 6/12, 1, 2, 3, 5, 7, 10, 20, 30] 
+# treasury_columns = ["Date", 1/12, 2/12, 3/12, 6/12, 1, 2, 3, 5, 7, 10, 20, 30] 
+treasury_columns = [1/12, 2/12, 3/12, 6/12, 1, 2, 3, 5, 7, 10, 20, 30]
 treasury.columns = treasury_columns
 
 # Convert data on Date column of treasury df to datetime64
-treasury['Date'] = pd.to_datetime(treasury['Date'])
+# treasury['Date'] = pd.to_datetime(treasury['Date'])
+treasury.index = pd.to_datetime(treasury.index)
+
+# Fill row for 11/10/2010 with the data for the next day. For some reason there
+    # are no treasury rates for that day.
+treasury.loc[pd.to_datetime("2010-10-11"), 
+             :] = treasury.loc[pd.to_datetime("2010-10-12"), :]
 
 
 # Options
@@ -60,7 +70,8 @@ p = Path("Raw data/Options/SPX_20040102_20190430")
 options_files = list(p.glob("UnderlyingOptionsEODQuotes_*.csv"))
 
 # Creates df from all files
-options = pd.concat([pd.read_csv(f) for f in options_files]) 
+# options = pd.concat([pd.read_csv(f) for f in options_files])
+options = pd.concat([pd.read_csv(f) for f in tqdm(options_files)])
 # TESTING WITH A SMALL SAMPLE
 # options = pd.read_csv("Raw data/Options/SPX_20040102_20190430/"
 #                         "UnderlyingOptionsEODQuotes_2004-01-02.csv")
@@ -89,7 +100,8 @@ def years_between(d1, d2):
 # Calculate the time to maturity (TTM), in years, for each option
 ttm = []
 
-for index, row in options.iterrows():
+# for index, row in options.iterrows():
+for index, row in tqdm(options.iterrows()):
     d1 = row.expiration
     d2 = row.QuoteDate
     d = years_between(d1, d2)
@@ -101,7 +113,8 @@ options['Time_to_Maturity'] = ttm
 # Calculate the average of the bid and ask prices of the option
 option_average_price = []
 
-for index, row in options.iterrows():
+# for index, row in options.iterrows():
+for index, row in tqdm(options.iterrows()):
     bid = row.bid_eod
     ask = row.ask_eod
     average = (ask + bid) / 2
@@ -121,21 +134,21 @@ treasury_maturities3 = [6/12, 1, 2, 3, 5, 7, 10, 20, 30]
 treasury_maturities4 = [1, 2, 3, 5, 7, 10, 20, 30]
 treasury_maturities5 = [1/12, 2/12, 3/12, 6/12, 1, 2, 3, 5, 7, 10, 20]
 
-for index, row in options.iterrows():
+# for index, row in options.iterrows():
+for index, row in tqdm(options.iterrows()):
 # The following code is complicated because there aren't data for certain 
     # maturities and time periods.
     if pd.to_datetime("2004-01-02") <= row.QuoteDate <= pd.to_datetime("2018-10-15"):
         if pd.to_datetime("2004-01-02") <= row.QuoteDate <= pd.to_datetime("2006-02-08") and row.Time_to_Maturity > 25:
             list_s = ([abs(maturity - row.Time_to_Maturity) for maturity in 
               treasury_maturities5])
-            list_s = list_s + [40]
+            list_s = list_s + [40] # 40 is an arbitrary number bigger than 30
             differences.loc[len(differences)] = list_s
         elif (pd.to_datetime("2008-12-10") or pd.to_datetime("2008-12-18") or pd.to_datetime("2008-12-24")) == row.QuoteDate and 1.5/12 <= row.Time_to_Maturity <= 3.5/12:
-            list_s = [0, 40, 40] # 40 is an arbitrary number bigger than 30
+            list_s = [0, 40, 40]
             list_s = list_s + [abs(maturity - row.Time_to_Maturity) for 
                                    maturity in treasury_maturities3]
             differences.loc[len(differences)] = list_s
-            
         elif (pd.to_datetime("2008-12-10") or pd.to_datetime("2008-12-18") or pd.to_datetime("2008-12-24")) == row.QuoteDate and 3.5/12 < row.Time_to_Maturity <= 4.5/12:    
             list_s = ([abs(maturity - row.Time_to_Maturity) for maturity in 
                            treasury_maturities2])
@@ -143,19 +156,24 @@ for index, row in options.iterrows():
             list_s = list_s + [abs(maturity - row.Time_to_Maturity) for 
                                    maturity in treasury_maturities4]
             differences.loc[len(differences)] = list_s
-        elif pd.to_datetime("2010-10-11") == row.QuoteDate:
-            if 1.5/12 <= row.Time_to_Maturity <= 2/12:
-                list_s = [0, 40] # 40 is an arbitrary number bigger than 30
-                list_s = list_s + [abs(maturity - (row + 1).Time_to_Maturity) 
-                                    for maturity in treasury_maturities1]
-                differences.loc[len(differences)] = list_s
-            elif 2/12 < row.Time_to_Maturity <= 2.5/12:
-                list_s = ([abs(maturity - (row + 1).Time_to_Maturity) for 
-                            maturity in treasury_maturities2])
-                list_s = list_s + [40, 0]
-                list_s = list_s + [abs(maturity - (row + 1).Time_to_Maturity) 
-                                    for maturity in treasury_maturities3]
-                differences.loc[len(differences)] = list_s
+        # elif pd.to_datetime("2010-10-11") == row.QuoteDate:
+        #     if 1.5/12 <= row.Time_to_Maturity <= 2/12:
+        #         list_s = [0, 40]
+        #         list_s = list_s + [abs(maturity - row.Time_to_Maturity) 
+        #                             for maturity in treasury_maturities1]
+        #         differences.loc[len(differences)] = list_s
+        #     elif 2/12 < row.Time_to_Maturity <= 2.5/12:
+        #         list_s = ([abs(maturity - row.Time_to_Maturity) for 
+        #                     maturity in treasury_maturities2])
+        #         list_s = list_s + [40, 0]
+        #         list_s = list_s + [abs(maturity - row.Time_to_Maturity) 
+        #                             for maturity in treasury_maturities3]
+        #         differences.loc[len(differences)] = list_s
+        #     else:
+        #         list_s = [40, 40, 40]
+        #         list_s = list_s + [abs(maturity - row.Time_to_Maturity) 
+        #                             for maturity in treasury_maturities3]
+        #         differences.loc[len(differences)] = list_s
         else:
             if 1.5/12 <= row.Time_to_Maturity <= 2/12:
                 list_s = [0, 40] # 40 is an arbitrary number bigger than 30
@@ -193,7 +211,8 @@ options = options.rename(columns = {0:'Maturity_Closest_TTM'})
 # Create list with the Treasury rates that matches each option's QuoteDate 
     # and Maturity_Closest_TTM
 rf_rate = []
-for index, row in options.iterrows():
+# for index, row in options.iterrows():
+for index, row in tqdm(options.iterrows()):
     rf_rate.append(float(treasury[row.Maturity_Closest_TTM].loc[(treasury["Date"] == row.QuoteDate)]))
 
 # Add rf_rate as a column in the options df and drop unnecessary columns
@@ -204,7 +223,8 @@ options = options.drop("Maturity_Closest_TTM", axis = 1)
 # Create list with the standard deviations that match each option's QuoteDate
 sigma_20 = []
 sigma_20_annualized = []
-for index, row in options.iterrows():
+# for index, row in options.iterrows():
+for index, row in tqdm(options.iterrows()):
     sigma_20.append(float(underlying["Sigma_20_Days"].loc[underlying["Date"] == row.QuoteDate]))
     sigma_20_annualized.append(float(underlying["Sigma_20_Days_Annualized"].loc[underlying["Date"] == row.QuoteDate]))
     
@@ -215,7 +235,8 @@ options["Sigma_20_Days_Annualized"] = sigma_20_annualized
 # Create list with the closing prices (of the underlying) that match each 
     # option's QuoteDate
 underlying_price = []
-for index, row in options.iterrows():
+# for index, row in options.iterrows():
+for index, row in tqdm(options.iterrows()):
     underlying_price.append(float(underlying[" Close"].loc[underlying["Date"] == row.QuoteDate]))
 
 # Add column of closing price of the underlying for each QuoteDate and drop
