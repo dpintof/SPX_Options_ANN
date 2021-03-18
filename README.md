@@ -1,12 +1,14 @@
 # SPX_Options_ANN
-Public repository for the code related to my Master's thesis. My e-mail: dpintof@disroot.org
+Public repository for the code related to my Master's thesis. My e-mail is: dpintof@disroot.org
 
 Work related to the paper Ke and Yang (2019) Option Pricing with Deep Learning. My code is inspired by what the authors made publicly available: https://github.com/ycm/cs230-proj.
 
 Instructions:
 
-~~1. Run Process_raw_data1.py to create options-df.csv and underlying_df.csv in the "Processed data" folder. It uses data in the "Raw data" folder.
-I did not include the database used in this file because it is proprietary. There are comments in the code on how to test it with a small sample.~~
+Process_raw_data1.py is to be used with the full proprietary dataset. Process_raw_data2.py is to be used with the small free dataset.
+
+1. Run Process_raw_data1.py to create options-df.csv and underlying_df.csv in the "Processed data" folder. It uses data in the "Raw data" folder.
+I did not include the database used in this file because it is proprietary. There are comments in the code on how to test it with a small sample.
 
 OR
 

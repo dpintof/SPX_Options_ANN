@@ -10,6 +10,7 @@ from pathlib import Path
 import pandas as pd
 from datetime import datetime
 import numpy as np
+from tqdm import tqdm
 
 
 # Underlying
@@ -113,7 +114,7 @@ options = options1.append(options2)
 # options = options1
 # TEST WITH SMALL SAMPLE FOR WHICH THE TIME TO MATURITY IS CLOSE TO 2 YEARS. 
     # WE DON'T HAVE 2 YEAR TREASURY RATES FOR SOME DATES.
-options = options.iloc[1052:1546] 
+# options = options.iloc[1052:1546] 
 
 # Create function that returns the number of years between two dates
 def years_between(d1, d2):
@@ -124,7 +125,7 @@ def years_between(d1, d2):
 # Calculate the time to maturity (TTM), in years, for each option
 ttm = []
 
-for index, row in options.iterrows():
+for index, row in tqdm(options.iterrows()):
     d1 = row.Expiration
     d2 = row.QuoteDate
     d = years_between(d1, d2)
@@ -154,7 +155,7 @@ treasury_maturities1 = [3/12, 6/12, 1, 2, 3, 5, 7, 10, 20, 30]
 treasury_maturities2 = [1/12]
 treasury_maturities3 = [6/12, 1, 2, 3, 5, 7, 10, 20, 30]
 
-for index, row in options.iterrows():
+for index, row in tqdm(options.iterrows()):
 # The following code is complicated because there aren't data for 2 month 
     # rates between 2018-08-01 and 2018-09-28.
     if pd.to_datetime("2018-08-01") <= row.QuoteDate <= pd.to_datetime("2018-09-28"):
