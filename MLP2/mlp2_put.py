@@ -6,20 +6,20 @@ Created on Sat Feb 20 09:29:12 2021
 @author: Diogo
 """
 
-from keras.models import Sequential
-# from keras.layers import Dense, Activation, LeakyReLU, BatchNormalization
-from keras.layers import Dense, LeakyReLU, BatchNormalization
-# from keras import backend
-# from keras.callbacks import TensorBoard
-from keras.optimizers import Adam
+# from keras.models import Sequential
+# from keras.layers import Dense, LeakyReLU, BatchNormalization
+# from keras.optimizers import Adam
 import pandas as pd
 import numpy as np
+# import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
 from sklearn.model_selection import train_test_split
 from os import path
 
 
 # Hyperparameters
-layers = 4
+n_hidden_layers = 3
 n_units = 400 # Number of neurons of the first 3 layers. 4th layer has 2 neurons
 n_batch = 4096 # Batch size is the number of samples per gradient update.
 n_epochs = 50
@@ -39,90 +39,126 @@ put_X_train, put_X_test, put_y_train, put_y_test = train_test_split(put_df.drop(
         "ask_eod"], axis = 1), put_df[["bid_eod", "ask_eod"]], test_size = 0.01)
 
 
-# Create a Sequential model that is a linear stack of layers
-model = Sequential()
+# Create model using Keras' functional API
+# Create input layer
+inputs = keras.Input(shape = (put_X_train.shape[1],))
+x = layers.LeakyReLU()(inputs)
 
-# Adds layers incrementally
-model.add(Dense(n_units, input_dim=put_X_train.shape[1]))
-model.add(LeakyReLU())
+# Create function that creates a hidden layer by taking a tensor as input and 
+    # applying Batch Normalization and the LeakyReLU activation.
+def hl(tensor):
+    dense = layers.Dense(n_units)
+    # Dense() creates a densely-connected NN layer, implementing the following 
+        # operation: output = activation(dot_product(input, kernel) + bias) 
+        # where activation is the element-wise activation function passed as the 
+        # activation argument, kernel is a weights matrix created by the layer, 
+        # and bias is a bias vector created by the layer (only applicable if 
+        # use_bias is True, which it is by default). In this case no activation 
+        # function was passed so there is "linear" activation: a(x) = x.
+    x = dense(tensor)
+    bn = layers.BatchNormalization()(x)
+    # Batch normalization scales the output of a layer by subtracting the batch
+        # mean and dividing by the batch standard deviation (so it maintains 
+        # the output's mean close to 0 and it's standard deviation close to 1).
+        # Theoretically this can speed up the training of the neural network.
+    lr = layers.LeakyReLU()(bn)
+    return lr
 
-for _ in range(layers - 1):
-    model.add(Dense(n_units))
-    model.add(BatchNormalization())
-    model.add(LeakyReLU())
+# Create hidden layers
+for _ in range(n_hidden_layers):
+    x = hl(x)
 
-model.add(Dense(2, activation='relu'))
+# Create output layer
+outputs = layers.Dense(2, activation='relu')(x)
+
+# Actually create the model
+model = keras.Model(inputs=inputs, outputs=outputs)
 
 
-# Configure the learning process, train the model and save model, with 
-    # different learning rates, batch sizes number of epochs.
-model.compile(loss='mse', optimizer=Adam())
-# model.summary()
-history = model.fit(put_X_train, put_y_train, 
-                    batch_size=n_batch, epochs=n_epochs, 
-                    validation_split = 0.01, verbose=1)
-model.save('Saved_models/mlp2_put_1')
-train_loss = history.history["loss"]
-validation_loss = history.history["val_loss"]
-numpy__train_loss = np.array(train_loss)
-numpy_validation_loss = np.array(validation_loss)
-np.savetxt("Saved_models/mlp2_put_1_train_losses.txt", 
-           numpy__train_loss, delimiter=",")
-np.savetxt("Saved_models/mlp2_put_1_validation_losses.txt", 
-           numpy_validation_loss, delimiter=",")
+# # Create a Sequential model that is a linear stack of layers
+# model = Sequential()
 
-model.compile(loss='mse', optimizer=Adam(1e-4))
-history = model.fit(put_X_train, put_y_train, 
-                    batch_size=n_batch, epochs=n_epochs, 
-                    validation_split = 0.01, verbose=1)
-model.save('Saved_models/mlp2_put_2')
-train_loss = history.history["loss"]
-validation_loss = history.history["val_loss"]
-numpy__train_loss = np.array(train_loss)
-numpy_validation_loss = np.array(validation_loss)
-np.savetxt("Saved_models/mlp2_put_2_train_losses.txt", 
-           numpy__train_loss, delimiter=",")
-np.savetxt("Saved_models/mlp2_put_2_validation_losses.txt", 
-           numpy_validation_loss, delimiter=",")
+# # Adds layers incrementally
+# model.add(Dense(n_units, input_dim=put_X_train.shape[1]))
+# model.add(LeakyReLU())
 
-model.compile(loss='mse', optimizer=Adam(1e-5))
-history = model.fit(put_X_train, put_y_train, 
-                    batch_size=n_batch, epochs=n_epochs, 
-                    validation_split = 0.01, verbose=1)
-model.save('Saved_models/mlp2_put_3')
-train_loss = history.history["loss"]
-validation_loss = history.history["val_loss"]
-numpy__train_loss = np.array(train_loss)
-numpy_validation_loss = np.array(validation_loss)
-np.savetxt("Saved_models/mlp2_put_3_train_losses.txt", 
-           numpy__train_loss, delimiter=",")
-np.savetxt("Saved_models/mlp2_put_3_validation_losses.txt", 
-           numpy_validation_loss, delimiter=",")
+# for _ in range(layers - 1):
+#     model.add(Dense(n_units))
+#     model.add(BatchNormalization())
+#     model.add(LeakyReLU())
 
-model.compile(loss='mse', optimizer=Adam(1e-6))
-history = model.fit(put_X_train, put_y_train, 
-                    batch_size=n_batch, epochs=10, 
-                    validation_split = 0.01, verbose=1)
-model.save('Saved_models/mlp2_put_4')
-train_loss = history.history["loss"]
-validation_loss = history.history["val_loss"]
-numpy__train_loss = np.array(train_loss)
-numpy_validation_loss = np.array(validation_loss)
-np.savetxt("Saved_models/mlp2_put_4_train_losses.txt", 
-           numpy__train_loss, delimiter=",")
-np.savetxt("Saved_models/mlp2_put_4_validation_losses.txt", 
-           numpy_validation_loss, delimiter=",")
+# model.add(Dense(2, activation='relu'))
 
-# SHORT TEST
-# model.compile(loss='mse', optimizer=Adam(lr=1e-6))
+
+# # Configure the learning process, train the model, save model and it's 
+#     # losses, with different learning rates, batch sizes and number of epochs.
+# model.compile(loss='mse', optimizer = keras.optimizers.Adam())
 # history = model.fit(put_X_train, put_y_train, 
-#                 batch_size=4096, epochs=2, validation_split = 0.01, verbose=1)
-# model.save('mlp2_put_5')
+#                     batch_size=n_batch, epochs=n_epochs, 
+#                     validation_split = 0.01, verbose=1)
+# model.save('Saved_models/mlp2_put_1')
 # train_loss = history.history["loss"]
 # validation_loss = history.history["val_loss"]
 # numpy__train_loss = np.array(train_loss)
 # numpy_validation_loss = np.array(validation_loss)
-# np.savetxt("Saved_models/mlp2_put_5_train_losses.txt", 
+# np.savetxt("Saved_models/mlp2_put_1_train_losses.txt", 
 #            numpy__train_loss, delimiter=",")
-# np.savetxt("Saved_models/mlp2_put_5_validation_losses.txt", 
+# np.savetxt("Saved_models/mlp2_put_1_validation_losses.txt", 
 #            numpy_validation_loss, delimiter=",")
+
+# model.compile(loss='mse', optimizer = keras.optimizers.Adam(1e-4))
+# history = model.fit(put_X_train, put_y_train, 
+#                     batch_size=n_batch, epochs=n_epochs, 
+#                     validation_split = 0.01, verbose=1)
+# model.save('Saved_models/mlp2_put_2')
+# train_loss = history.history["loss"]
+# validation_loss = history.history["val_loss"]
+# numpy__train_loss = np.array(train_loss)
+# numpy_validation_loss = np.array(validation_loss)
+# np.savetxt("Saved_models/mlp2_put_2_train_losses.txt", 
+#            numpy__train_loss, delimiter=",")
+# np.savetxt("Saved_models/mlp2_put_2_validation_losses.txt", 
+#            numpy_validation_loss, delimiter=",")
+
+# model.compile(loss='mse', optimizer = keras.optimizers.Adam(1e-5))
+# history = model.fit(put_X_train, put_y_train, 
+#                     batch_size=n_batch, epochs=n_epochs, 
+#                     validation_split = 0.01, verbose=1)
+# model.save('Saved_models/mlp2_put_3')
+# train_loss = history.history["loss"]
+# validation_loss = history.history["val_loss"]
+# numpy__train_loss = np.array(train_loss)
+# numpy_validation_loss = np.array(validation_loss)
+# np.savetxt("Saved_models/mlp2_put_3_train_losses.txt", 
+#            numpy__train_loss, delimiter=",")
+# np.savetxt("Saved_models/mlp2_put_3_validation_losses.txt", 
+#            numpy_validation_loss, delimiter=",")
+
+# model.compile(loss='mse', optimizer = keras.optimizers.Adam(1e-6))
+# history = model.fit(put_X_train, put_y_train, 
+#                     batch_size=n_batch, epochs=10, 
+#                     validation_split = 0.01, verbose=1)
+# model.save('Saved_models/mlp2_put_4')
+# train_loss = history.history["loss"]
+# validation_loss = history.history["val_loss"]
+# numpy__train_loss = np.array(train_loss)
+# numpy_validation_loss = np.array(validation_loss)
+# np.savetxt("Saved_models/mlp2_put_4_train_losses.txt", 
+#            numpy__train_loss, delimiter=",")
+# np.savetxt("Saved_models/mlp2_put_4_validation_losses.txt", 
+#            numpy_validation_loss, delimiter=",")
+
+# SHORT TEST
+model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr=1e-6))
+history = model.fit(put_X_train, put_y_train, 
+                batch_size=4096, epochs=1, validation_split = 0.01, verbose=1)
+model.save('mlp2_put_5')
+train_loss = history.history["loss"]
+validation_loss = history.history["val_loss"]
+numpy__train_loss = np.array(train_loss)
+numpy_validation_loss = np.array(validation_loss)
+np.savetxt("Saved_models/mlp2_put_5_train_losses.txt", 
+            numpy__train_loss, delimiter=",")
+np.savetxt("Saved_models/mlp2_put_5_validation_losses.txt", 
+            numpy_validation_loss, delimiter=",")
+

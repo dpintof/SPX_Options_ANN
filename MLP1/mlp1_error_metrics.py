@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from keras.models import load_model
-from scipy.stats import norm
+# from scipy.stats import norm
 from os import path
 
 
@@ -30,10 +30,12 @@ put_X_train, put_X_test, put_y_train, put_y_test = train_test_split(call_df.drop
                     axis = 1), call_df.Option_Average_Price, test_size = 0.01)
 
 
-call = load_model('Saved_models/mlp1_call_3')
-# call = load_model('mlp1_call_5') # TESTING WITH A SMALL SAMPLE
-put = load_model('Saved_models/mlp1_put_3')
+# call = load_model('Saved_models/mlp1_call_3')
+# put = load_model('Saved_models/mlp1_put_3')
 
+# TESTING WITH A SMALL SAMPLE
+call = load_model('Saved_models/mlp1_call_5')
+call = load_model('Saved_models/mlp1_put_5')
 
 # def black_scholes_call(row):
 #     S = row.Underlying_Price
