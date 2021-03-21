@@ -32,12 +32,9 @@ put_X_train, put_X_test, put_y_train, put_y_test = train_test_split(call_df.drop
 
 
 # Load models
-# call = load_model('Saved_models/mlp1_call_3')
-# put = load_model('Saved_models/mlp1_put_3')
+call = tf.keras.models.load_model('Saved_models/mlp1_call_3')
+put = tf.keras.models.load_model('Saved_models/mlp1_put_3') 
 
-# TESTING WITH A SMALL SAMPLE
-call = tf.keras.models.load_model('Saved_models/mlp1_call_5')
-put = tf.keras.models.load_model('Saved_models/mlp1_put_5')
 
 
 # def black_scholes_call(row):

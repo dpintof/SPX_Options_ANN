@@ -10,8 +10,8 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
-from scipy.stats import kde
-from keras.models import load_model
+# from scipy.stats import kde
+import tensorflow as tf
 from os import path
 
 
@@ -30,10 +30,9 @@ put_X_train, put_X_test, put_y_train, put_y_test = train_test_split(put_df.drop(
         "ask_eod"], axis = 1), put_df[["bid_eod", "ask_eod"]], test_size = 0.01)
 
 
-call = load_model('Saved_models/mlp2_call_3')
-# TEST WITH A SMALL SAMPLE
-# call = load_model('mlp2_call_5') 
-put = load_model('Saved_models/mlp2_put_3')
+# Load models
+call = tf.keras.models.load_model('Saved_models/mlp2_call_5')
+put = tf.keras.models.load_model('Saved_models/mlp2_put_5') 
 
 
 def error_metrics(actual, predicted):
@@ -59,25 +58,25 @@ put_errors = error_metrics(np.mean(put_y_test, axis=1), np.mean(put_y_pred,
                                                                 axis=1))
 
 
-def matrix(actual, predicted, q):
-    rel = (actual - predicted) / actual
-    def segregate(x, q): # results in either -2 or -1
-        up = x > q 
-        low = x < -q
-        mid = ~(up | low) # ~ and | operators: 
-            # https://wiki.python.org/moin/BitwiseOperators
-        return (up, mid, low)
-    bid = rel.iloc[:,0] # series with all the relative bid prices
-    ask = rel.iloc[:,1] # series with all the relative ask prices
-    x = segregate(bid, q)
-    y = segregate(ask, q)
-    return np.array([[sum(x[i] & y[j]) for i in range(3)] for j in range(3)]) / rel.shape[0]
-    # rel.shape[0] returns the number of rows in the rel df
+# def matrix(actual, predicted, q):
+#     rel = (actual - predicted) / actual
+#     def segregate(x, q): # results in either -2 or -1
+#         up = x > q 
+#         low = x < -q
+#         mid = ~(up | low) # ~ and | operators: 
+#             # https://wiki.python.org/moin/BitwiseOperators
+#         return (up, mid, low)
+#     bid = rel.iloc[:,0] # series with all the relative bid prices
+#     ask = rel.iloc[:,1] # series with all the relative ask prices
+#     x = segregate(bid, q)
+#     y = segregate(ask, q)
+#     return np.array([[sum(x[i] & y[j]) for i in range(3)] for j in range(3)]) / rel.shape[0]
+#     # rel.shape[0] returns the number of rows in the rel df
 
-matrix(call_y_test, call_y_pred, 0.01)
-matrix(call_y_test, call_y_pred, 0.05)
-matrix(put_y_test, put_y_pred, 0.01) 
-matrix(put_y_test, put_y_pred, 0.05)
+# matrix(call_y_test, call_y_pred, 0.01)
+# matrix(call_y_test, call_y_pred, 0.05)
+# matrix(put_y_test, put_y_pred, 0.01) 
+# matrix(put_y_test, put_y_pred, 0.05)
 
 
 def error_scatter(actual, predicted):
@@ -98,20 +97,19 @@ plt.title('MLP2 Put Percent Errors')
 plt.savefig('Saved_models/mlp2_put_scatter.png')
 
 
-def kde_scatter(actual, predicted):
-    rel = 100 * (actual - predicted) / actual
-    rel = rel.replace([np.inf, -np.inf], np.nan)
-    rel = rel.dropna()
-    temp = rel[np.linalg.norm(rel, ord=np.inf, axis=1) < 100]
-    k = kde.gaussian_kde(temp.T)
-    plt.scatter(temp.iloc[:,0], temp.iloc[:,1], c=k(temp.T), s=1)
-    plt.xlim(-10, 10)
-    plt.ylim(-10, 10)
-    plt.xlabel('Bid Error %')
-    plt.ylabel('Ask Error %')
+# def kde_scatter(actual, predicted):
+#     rel = 100 * (actual - predicted) / actual
+#     rel = rel.replace([np.inf, -np.inf], np.nan)
+#     rel = rel.dropna()
+#     temp = rel[np.linalg.norm(rel, ord=np.inf, axis=1) < 100]
+#     k = kde.gaussian_kde(temp.T)
+#     plt.scatter(temp.iloc[:,0], temp.iloc[:,1], c=k(temp.T), s=1)
+#     plt.xlim(-10, 10)
+#     plt.ylim(-10, 10)
+#     plt.xlabel('Bid Error %')
+#     plt.ylabel('Ask Error %')
 
-# kde_scatter(call_y_test, call_y_pred) # PROVAVELMENTE ESTÁ A DAR ERRO POIS 
-    # ESTOU A USAR UM MODELO DE TESTES COM POUQUÍSSIMAS OBSERVAÇÕES
+# kde_scatter(call_y_test, call_y_pred)
 # plt.title('MLP2 Call Percent Errors')
 # plt.savefig('Saved_graphs/mlp2_call_kde.png')
 
