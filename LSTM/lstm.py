@@ -32,7 +32,7 @@ n_features = 4 # Strike price, time to maturity, risk-free rate and price of
 n_units = 100 # Number of neurons of the hidden layers in the MLP1 network.
 n_units_lstm = 8 # Number of neurons of the LSTM layers
 n_batch = 4096
-n_epochs = 100
+n_epochs = 20
 N_TIMESTEPS = 20
 
 
@@ -68,14 +68,10 @@ put_df = put_df.drop(columns=['QuoteDate'])
 # Split dfs into random train and test arrays, for inputs (X) and output (y)
 call_X_train, call_X_test, call_y_train, call_y_test = train_test_split(call_df.drop(["Option_Average_Price"], 
             axis=1).values, call_df.Option_Average_Price.values, test_size=0.01)
-# call_X_train, call_X_test, call_y_train, call_y_test = train_test_split(call_df.drop(["Option_Average_Price"], 
-#             axis=1), call_df.Option_Average_Price, test_size=0.01)
 put_X_train, put_X_test, put_y_train, put_y_test = train_test_split(put_df.drop(["Option_Average_Price"], 
             axis=1).values, put_df.Option_Average_Price.values, test_size=0.01)
-# put_X_train, put_X_test, put_y_train, put_y_test = train_test_split(put_df.drop(["Option_Average_Price"], 
-#             axis=1), put_df.Option_Average_Price, test_size=0.01)
 
-# Create list containing a 3-dimensional array containing the N_TIMESTEPS 
+# Create lists composed of a 3-dimensional array containing the N_TIMESTEPS 
     # prices of the underlying per row and an array with n_feature input values
     # per row.
 call_X_train = [call_X_train[:, -N_TIMESTEPS:].reshape(call_X_train.shape[0], 
@@ -107,6 +103,15 @@ def make_model():
     lstm = layers.LSTM(units = n_units_lstm, return_sequences=True)(lstm)
     lstm = layers.LSTM(units = n_units_lstm, return_sequences=True)(lstm)
     lstm = layers.LSTM(units = n_units_lstm, return_sequences=False)(lstm)
+    
+    # lstm = layers.Bidirectional(layers.LSTM(units = n_units_lstm, 
+    #     input_shape=(N_TIMESTEPS, 1), return_sequences=True)(close_history))
+    # lstm = layers.Bidirectional(layers.LSTM(units = n_units_lstm, 
+    #                                         return_sequences=True)(lstm))
+    # lstm = layers.Bidirectional(layers.LSTM(units = n_units_lstm, 
+    #                                         return_sequences=True)(lstm))
+    # lstm = layers.Bidirectional(layers.LSTM(units = n_units_lstm, 
+    #                                         return_sequences=False)(lstm))
 
     # Create layer that concatenates the output of the LSTM network (input1) with 
         # the other inputs (input2) necessary to use the MLP1 architecture.
@@ -188,7 +193,7 @@ put_model = make_model()
     # losses, with different learning rates, batch sizes and number of epochs.
 call_model.compile(optimizer = keras.optimizers.Adam(lr=1e-2), loss='mse')
 history = call_model.fit(call_X_train, call_y_train, 
-                    batch_size=n_batch, epochs=10, 
+                    batch_size=n_batch, epochs=n_epochs, 
                     validation_split = 0.01, verbose=1)
 call_model.save('Saved_models/lstm_call_1')
 train_loss = history.history["loss"]
@@ -202,7 +207,7 @@ np.savetxt("Saved_models/lstm_call_1_validation_losses.txt",
 
 call_model.compile(optimizer = keras.optimizers.Adam(lr=1e-3), loss='mse')
 history = call_model.fit(call_X_train, call_y_train, 
-                    batch_size=n_batch, epochs=5, 
+                    batch_size=n_batch, epochs=n_epochs, 
                     validation_split = 0.01, verbose=1)
 call_model.save('Saved_models/lstm_call_2')
 train_loss = history.history["loss"]
@@ -216,7 +221,7 @@ np.savetxt("Saved_models/lstm_call_2_validation_losses.txt",
 
 call_model.compile(optimizer = keras.optimizers.Adam(lr=1e-4), loss='mse')
 history = call_model.fit(call_X_train, call_y_train, 
-                    batch_size=n_batch, epochs=5, 
+                    batch_size=n_batch, epochs=n_epochs, 
                     validation_split = 0.01, verbose=1)
 call_model.save('Saved_models/lstm_call_3')
 train_loss = history.history["loss"]
@@ -230,7 +235,7 @@ np.savetxt("Saved_models/lstm_call_3_validation_losses.txt",
 
 put_model.compile(optimizer = keras.optimizers.Adam(lr=1e-2), loss='mse')
 history = put_model.fit(put_X_train, put_y_train, 
-                    batch_size=n_batch, epochs=10, 
+                    batch_size=n_batch, epochs=n_epochs, 
                     validation_split = 0.01, verbose=1)
 put_model.save('Saved_models/lstm_put_1')
 train_loss = history.history["loss"]
@@ -244,7 +249,7 @@ np.savetxt("Saved_models/lstm_put_1_validation_losses.txt",
 
 put_model.compile(optimizer = keras.optimizers.Adam(lr=1e-3), loss='mse')
 history = put_model.fit(put_X_train, put_y_train, 
-                    batch_size=n_batch, epochs=5, 
+                    batch_size=n_batch, epochs=n_epochs, 
                     validation_split = 0.01, verbose=1)
 put_model.save('Saved_models/lstm_put_2')
 train_loss = history.history["loss"]
@@ -258,7 +263,7 @@ np.savetxt("Saved_models/lstm_put_2_validation_losses.txt",
 
 put_model.compile(optimizer = keras.optimizers.Adam(lr=1e-4), loss='mse')
 history = put_model.fit(put_X_train, put_y_train, 
-                    batch_size=n_batch, epochs=5, 
+                    batch_size=n_batch, epochs=n_epochs, 
                     validation_split = 0.01, verbose=1)
 put_model.save("Saved_models/lstm_put_3")
 train_loss = history.history["loss"]

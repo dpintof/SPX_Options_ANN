@@ -22,7 +22,7 @@ from os import path
 n_hidden_layers = 3
 n_units = 400 # Number of neurons of the hidden layers.
 n_batch = 4096 # Number of observations used per gradient update.
-n_epochs = 50
+n_epochs = 30
 
 
 # Create DataFrame (df) for calls
