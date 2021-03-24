@@ -103,15 +103,14 @@ def make_model():
     lstm = layers.LSTM(units = n_units_lstm, return_sequences=True)(lstm)
     lstm = layers.LSTM(units = n_units_lstm, return_sequences=True)(lstm)
     lstm = layers.LSTM(units = n_units_lstm, return_sequences=False)(lstm)
-    
     # lstm = layers.Bidirectional(layers.LSTM(units = n_units_lstm, 
-    #     input_shape=(N_TIMESTEPS, 1), return_sequences=True)(close_history))
+    #     input_shape=(N_TIMESTEPS, 1), return_sequences=True))(close_history)
     # lstm = layers.Bidirectional(layers.LSTM(units = n_units_lstm, 
-    #                                         return_sequences=True)(lstm))
+    #                                         return_sequences=True))(lstm)
     # lstm = layers.Bidirectional(layers.LSTM(units = n_units_lstm, 
-    #                                         return_sequences=True)(lstm))
+    #                                         return_sequences=True))(lstm)
     # lstm = layers.Bidirectional(layers.LSTM(units = n_units_lstm, 
-    #                                         return_sequences=False)(lstm))
+    #                                         return_sequences=False))(lstm)
 
     # Create layer that concatenates the output of the LSTM network (input1) with 
         # the other inputs (input2) necessary to use the MLP1 architecture.

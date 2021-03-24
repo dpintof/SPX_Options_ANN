@@ -82,8 +82,8 @@ put_X_test = [put_X_test[:, -N_TIMESTEPS:].reshape(put_X_test.shape[0],
                                         N_TIMESTEPS, 1), put_X_test[:, :4]]
 
 
-call_model = tf.keras.models.load_model('Saved_models/lstm_call_1')
-put_model = tf.keras.models.load_model('Saved_models/lstm_put_1')
+call_model = tf.keras.models.load_model('Saved_models/lstm_call_3')
+put_model = tf.keras.models.load_model('Saved_models/lstm_put_3')
 
 
 # def black_scholes_call(row):
