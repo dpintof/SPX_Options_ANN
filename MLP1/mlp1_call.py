@@ -58,10 +58,12 @@ def hl(tensor):
         # function was passed so there is "linear" activation: a(x) = x.
     x = dense(tensor)
     bn = layers.BatchNormalization()(x)
-    # Batch normalization scales the output of a layer by subtracting the batch
-        # mean and dividing by the batch standard deviation (so it maintains 
-        # the output's mean close to 0 and it's standard deviation close to 1).
-        # Theoretically this can speed up the training of the neural network.
+    """
+    Batch normalization scales the output of a layer by subtracting the batch
+    mean and dividing by the batch standard deviation (so the output's mean 
+    will be close to 0 and it's standard deviation close to 1). Theoretically 
+    this can speed up the training of the neural network.
+    """
     lr = layers.LeakyReLU()(bn)
     return lr
 

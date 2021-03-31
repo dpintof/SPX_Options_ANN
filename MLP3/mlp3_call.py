@@ -16,19 +16,17 @@ import numpy as np
 
 
 # Hyperparameters
-n_hidden_layers = 3
-n_units = 400 # Number of neurons of the hidden layers.
-n_batch = 1024 # Number of observations used per gradient update.
-n_epochs = 40
+n_hidden_layers = 2
+n_units = 128 # Number of neurons of the hidden layers.
+n_batch = 64 # Number of observations used per gradient update.
+n_epochs = 30
 
 
 # Create DataFrame (df) for calls
 basepath = path.dirname(__file__)
 filepath = path.abspath(path.join(basepath, "..", "Processed data/options-df.csv"))
 df = pd.read_csv(filepath)
-# df = df.dropna(axis=0)
 df = df.drop(columns=['bid_eod', 'ask_eod', "QuoteDate"])
-# df.strike_price = df.strike_price / 1000
 call_df = df[df.OptionType == 'c'].drop(['OptionType'], axis=1)
 
 
@@ -40,10 +38,10 @@ call_X_train, call_X_test, call_y_train, call_y_test = train_test_split(call_df.
 # Create model using Keras' functional API
 # Create input layer
 inputs = keras.Input(shape = (call_X_train.shape[1],))
-x = layers.LeakyReLU()(inputs)
+x = layers.LeakyReLU(alpha = 1)(inputs)
 
 # Create function that creates a hidden layer by taking a tensor as input and 
-    # applying Batch Normalization and the LeakyReLU activation.
+    # applying the ELU activation function.
 def hl(tensor):
     dense = layers.Dense(n_units)
     # Dense() creates a densely-connected NN layer, implementing the following 
@@ -54,12 +52,7 @@ def hl(tensor):
         # use_bias is True, which it is by default). In this case no activation 
         # function was passed so there is "linear" activation: a(x) = x.
     x = dense(tensor)
-    bn = layers.BatchNormalization()(x)
-    # Batch normalization scales the output of a layer by subtracting the batch
-        # mean and dividing by the batch standard deviation (so it maintains 
-        # the output's mean close to 0 and it's standard deviation close to 1).
-        # Theoretically this can speed up the training of the neural network.
-    lr = layers.LeakyReLU()(bn)
+    lr = layers.ELU()(x)
     return lr
 
 # Create hidden layers
@@ -77,45 +70,72 @@ model = keras.Model(inputs=inputs, outputs=outputs)
 def constrained_mse(y_true, y_pred):
     
     # Penalization function
+    # Parameters of said function
+    lamb = 10
     m = 4
-    def pen(x, lamb):
+    
+    # Function
+    def pen(x):
         return tf.cond(x < 0, lambda: 0.0, lambda: lamb * x**m)
     
     return (keras.backend.mean(keras.backend.square(y_pred - y_true)) # MSE
             
             + pen(-(model.input[:,0])**2 * tf.gradients(tf.gradients(y_pred, 
-                    model.input), model.input)[0][:, 0], 1) # constraint 1
+                    model.input), model.input)[0][:, 0]) # constraint 1
             
             + pen(-model.input[:,1] * tf.gradients(y_pred, 
-                    model.input)[0][:, 1], 2) # constraint 2
+                    model.input)[0][:, 1]) # constraint 2
 
             + pen(model.input[:,0] * tf.gradients(y_pred, 
-                    model.input)[0][:, 0], 3)) # constraint 3
+                    model.input)[0][:, 0])) # constraint 3
 
-# Configure the learning process of the model with a loss function and an 
-    # optimizer. The optimizer changes the weights in order to minimize the 
-    # loss function. In this case the Adam optimizer will use the default 
-    # learning rate (LR) of 1e-3.
-model.compile(loss = constrained_mse, optimizer = keras.optimizers.Adam())
-# model.summary()
 
-# Train the model with batch_size = n_batch. See fit() method's arguments: 
-    # https://faroit.com/keras-docs/2.0.2/models/sequential/
-history = model.fit(call_X_train, call_y_train, batch_size = n_batch, 
-                    epochs = n_epochs, validation_split = 0.01, verbose = 1)
+# Measure/Metric for the amount of prices that are not arbitrage-free.
+def measure_arbitrage(y_true, y_pred):
+    
+    # Penalization function
+    # Parameters of said function
+    lamb = 1
+    m = 0
+    
+    # Function
+    def pen(x):
+        return tf.cond(x < 0, lambda: 0.0, lambda: lamb * x**m)
+    
+    return (pen(-(model.input[:,0])**2 * tf.gradients(tf.gradients(y_pred, 
+                    model.input), model.input)[0][:, 0]) # constraint 1
+            
+            + pen(-model.input[:,1] * tf.gradients(y_pred, 
+                    model.input)[0][:, 1]) # constraint 2
 
-# Save the model's architecture, weights and optimizer's state
-model.save('Saved_models/mlp1_call_1')
+            + pen(model.input[:,0] * tf.gradients(y_pred, 
+                    model.input)[0][:, 0])) # constraint 3
 
-# Save the model's train and validation losses for each epoch.
-train_loss = history.history["loss"]
-validation_loss = history.history["val_loss"]
-numpy__train_loss = np.array(train_loss)
-numpy_validation_loss = np.array(validation_loss)
-np.savetxt("Saved_models/mlp1_call_1_train_losses.txt", 
-            numpy__train_loss, delimiter=",")
-np.savetxt("Saved_models/mlp1_call_1_validation_losses.txt", 
-            numpy_validation_loss, delimiter=",")
+
+# # Configure the learning process of the model with a loss function and an 
+#     # optimizer. The optimizer changes the weights in order to minimize the 
+#     # loss function. In this case the Adam optimizer will use the default 
+#     # learning rate (LR) of 1e-3.
+# model.compile(loss = constrained_mse, optimizer = keras.optimizers.Adam())
+# # model.summary()
+
+# # Train the model with batch_size = n_batch. See fit() method's arguments: 
+#     # https://faroit.com/keras-docs/2.0.2/models/sequential/
+# history = model.fit(call_X_train, call_y_train, batch_size = n_batch, 
+#                     epochs = n_epochs, validation_split = 0.01, verbose = 1)
+
+# # Save the model's architecture, weights and optimizer's state
+# model.save('Saved_models/mlp1_call_1')
+
+# # Save the model's train and validation losses for each epoch.
+# train_loss = history.history["loss"]
+# validation_loss = history.history["val_loss"]
+# numpy__train_loss = np.array(train_loss)
+# numpy_validation_loss = np.array(validation_loss)
+# np.savetxt("Saved_models/mlp1_call_1_train_losses.txt", 
+#             numpy__train_loss, delimiter=",")
+# np.savetxt("Saved_models/mlp1_call_1_validation_losses.txt", 
+#             numpy_validation_loss, delimiter=",")
 
 # # LR = 1e-4, batch size = 4096, epochs = n_epochs
 # model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr=1e-4))
@@ -160,18 +180,19 @@ np.savetxt("Saved_models/mlp1_call_1_validation_losses.txt",
 # np.savetxt("Saved_models/mlp1_call_4_validation_losses.txt", 
 #             numpy_validation_loss, delimiter=",")
 
-# # QUICK TEST
-# model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr=1e-6))
-# history = model.fit(call_X_train, call_y_train, 
-#                     batch_size=4096, epochs=1, 
-#                     validation_split = 0.01, verbose=1)
-# model.save('Saved_models/mlp1_call_5')
-# train_loss = history.history["loss"]
-# validation_loss = history.history["val_loss"]
-# numpy__train_loss = np.array(train_loss)
-# numpy_validation_loss = np.array(validation_loss)
-# np.savetxt("Saved_models/mlp1_call_5_train_losses.txt", 
-#             numpy__train_loss, delimiter=",")
-# np.savetxt("Saved_models/mlp1_call_5_validation_losses.txt", 
-#             numpy_validation_loss, delimiter=",")
+# QUICK TEST
+model.compile(loss = constrained_mse, optimizer = keras.optimizers.Adam())
+# model.compile(loss = constrained_mse, optimizer = keras.optimizers.Adam(), 
+#               metrics = [measure_arbitrage])
+history = model.fit(call_X_train, call_y_train, batch_size = tf.shape([4096]), 
+                    epochs = 1, validation_split = 0.01, verbose = 1)
+model.save('Saved_models/mlp3_call_test')
+train_loss = history.history["loss"]
+validation_loss = history.history["val_loss"]
+numpy__train_loss = np.array(train_loss)
+numpy_validation_loss = np.array(validation_loss)
+np.savetxt("Saved_models/mlp3_call_test_train_losses.txt", 
+            numpy__train_loss, delimiter=",")
+np.savetxt("Saved_models/mlp3_call_test_validation_losses.txt", 
+            numpy_validation_loss, delimiter=",")
 
