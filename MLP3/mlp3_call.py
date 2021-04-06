@@ -28,6 +28,7 @@ filepath = path.abspath(path.join(basepath, "..", "Processed data/options-df.csv
 df = pd.read_csv(filepath)
 df = df.drop(columns=['bid_eod', 'ask_eod', "QuoteDate"])
 call_df = df[df.OptionType == 'c'].drop(['OptionType'], axis=1)
+# call_df = call_df.dropna()
 # call_df.to_csv('call_df.csv', index=False)
 
 # Split call_df into random train and test subsets, for inputs (X) and output (y)
@@ -153,101 +154,101 @@ def measure_arbitrage(y_true, y_pred):
                     model.input)[0][:, 0], lamb, m)) # constraint 3
 
 
-"""
-Configure the learning process of the model with a loss function and an 
-optimizer. The optimizer changes the weights in order to minimize the loss 
-function. In this case the Adam optimizer will use the default learning rate 
-(LR) of 1e-3.
-"""
-model.compile(loss = constrained_mse, optimizer = keras.optimizers.Adam(), 
-              metrics = [measure_arbitrage])
-# model.summary()
-
-"""
-Train the model with batch_size = n_batch. See fit() method's arguments: 
-https://faroit.com/keras-docs/2.0.2/models/sequential/
-"""
-history = model.fit(call_X_train, call_y_train, batch_size = n_batch, 
-                    epochs = n_epochs, validation_split = 0.01, verbose = 1)
-
-# Save the model's architecture, weights and optimizer's state
-model.save('Saved_models/mlp3_call_1')
-
-# Save the model's train and validation losses for each epoch.
-train_loss = history.history["loss"]
-validation_loss = history.history["val_loss"]
-numpy__train_loss = np.array(train_loss)
-numpy_validation_loss = np.array(validation_loss)
-np.savetxt("Saved_models/mlp3_call_1_train_losses.txt", 
-            numpy__train_loss, delimiter=",")
-np.savetxt("Saved_models/mlp3_call_1_validation_losses.txt", 
-            numpy_validation_loss, delimiter=",")
-
-# LR = 1e-4, batch size = 4096, epochs = n_epochs
-model.compile(loss = constrained_mse, 
-              optimizer = keras.optimizers.Adam(lr=1e-4), 
-              metrics = [measure_arbitrage])
-history = model.fit(call_X_train, call_y_train, batch_size = 4096, 
-                    epochs = n_epochs, validation_split = 0.01, verbose=1)
-model.save('Saved_models/mlp3_call_2')
-train_loss = history.history["loss"]
-validation_loss = history.history["val_loss"]
-numpy__train_loss = np.array(train_loss)
-numpy_validation_loss = np.array(validation_loss)
-np.savetxt("Saved_models/mlp3_call_2_train_losses.txt", 
-            numpy__train_loss, delimiter=",")
-np.savetxt("Saved_models/mlp3_call_2_validation_losses.txt", 
-            numpy_validation_loss, delimiter=",")
-
-# LR = 1e-5, batch size = 4096, epochs = 10
-model.compile(loss = constrained_mse, 
-              optimizer = keras.optimizers.Adam(lr=1e-5), 
-              metrics = [measure_arbitrage])
-history = model.fit(call_X_train, call_y_train, 
-                    batch_size=4096, epochs=10, 
-                    validation_split = 0.01, verbose=1)
-model.save('Saved_models/mlp3_call_3')
-train_loss = history.history["loss"]
-validation_loss = history.history["val_loss"]
-numpy__train_loss = np.array(train_loss)
-numpy_validation_loss = np.array(validation_loss)
-np.savetxt("Saved_models/mlp3_call_3_train_losses.txt", 
-            numpy__train_loss, delimiter=",")
-np.savetxt("Saved_models/mlp3_call_3_validation_losses.txt", 
-            numpy_validation_loss, delimiter=",")
-
-# LR = 1e-6, batch size = 4096, epochs = 10
-model.compile(loss = constrained_mse, 
-              optimizer = keras.optimizers.Adam(lr=1e-6), 
-              metrics = [measure_arbitrage])
-history = model.fit(call_X_train, call_y_train, 
-                    batch_size=4096, epochs=10, 
-                    validation_split = 0.01, verbose=1)
-model.save('Saved_models/mlp3_call_4')
-train_loss = history.history["loss"]
-validation_loss = history.history["val_loss"]
-numpy__train_loss = np.array(train_loss)
-numpy_validation_loss = np.array(validation_loss)
-np.savetxt("Saved_models/mlp3_call_4_train_losses.txt", 
-            numpy__train_loss, delimiter=",")
-np.savetxt("Saved_models/mlp3_call_4_validation_losses.txt", 
-            numpy_validation_loss, delimiter=",")
-
-# # QUICK TEST
-# # model.compile(loss = "mse", optimizer = keras.optimizers.Adam())
-# # model.compile(loss = constrained_mse, optimizer = keras.optimizers.Adam())
+# """
+# Configure the learning process of the model with a loss function and an 
+# optimizer. The optimizer changes the weights in order to minimize the loss 
+# function. In this case the Adam optimizer will use the default learning rate 
+# (LR) of 1e-3.
+# """
 # model.compile(loss = constrained_mse, optimizer = keras.optimizers.Adam(), 
 #               metrics = [measure_arbitrage])
-# history = model.fit(call_X_train, call_y_train, 
-#                     batch_size = 4096, epochs = 1,
-#                     validation_split = 0.01, verbose = 1)
-# model.save('Saved_models/mlp3_call_test')
+# # model.summary()
+
+# """
+# Train the model with batch_size = n_batch. See fit() method's arguments: 
+# https://faroit.com/keras-docs/2.0.2/models/sequential/
+# """
+# history = model.fit(call_X_train, call_y_train, batch_size = n_batch, 
+#                     epochs = n_epochs, validation_split = 0.01, verbose = 1)
+
+# # Save the model's architecture, weights and optimizer's state
+# model.save('Saved_models/mlp3_call_1')
+
+# # Save the model's train and validation losses for each epoch.
 # train_loss = history.history["loss"]
 # validation_loss = history.history["val_loss"]
 # numpy__train_loss = np.array(train_loss)
 # numpy_validation_loss = np.array(validation_loss)
-# np.savetxt("Saved_models/mlp3_call_test_train_losses.txt", 
+# np.savetxt("Saved_models/mlp3_call_1_train_losses.txt", 
 #             numpy__train_loss, delimiter=",")
-# np.savetxt("Saved_models/mlp3_call_test_validation_losses.txt", 
+# np.savetxt("Saved_models/mlp3_call_1_validation_losses.txt", 
 #             numpy_validation_loss, delimiter=",")
+
+# # LR = 1e-4, batch size = 4096, epochs = n_epochs
+# model.compile(loss = constrained_mse, 
+#               optimizer = keras.optimizers.Adam(lr=1e-4), 
+#               metrics = [measure_arbitrage])
+# history = model.fit(call_X_train, call_y_train, batch_size = 4096, 
+#                     epochs = n_epochs, validation_split = 0.01, verbose=1)
+# model.save('Saved_models/mlp3_call_2')
+# train_loss = history.history["loss"]
+# validation_loss = history.history["val_loss"]
+# numpy__train_loss = np.array(train_loss)
+# numpy_validation_loss = np.array(validation_loss)
+# np.savetxt("Saved_models/mlp3_call_2_train_losses.txt", 
+#             numpy__train_loss, delimiter=",")
+# np.savetxt("Saved_models/mlp3_call_2_validation_losses.txt", 
+#             numpy_validation_loss, delimiter=",")
+
+# # LR = 1e-5, batch size = 4096, epochs = 10
+# model.compile(loss = constrained_mse, 
+#               optimizer = keras.optimizers.Adam(lr=1e-5), 
+#               metrics = [measure_arbitrage])
+# history = model.fit(call_X_train, call_y_train, 
+#                     batch_size=4096, epochs=10, 
+#                     validation_split = 0.01, verbose=1)
+# model.save('Saved_models/mlp3_call_3')
+# train_loss = history.history["loss"]
+# validation_loss = history.history["val_loss"]
+# numpy__train_loss = np.array(train_loss)
+# numpy_validation_loss = np.array(validation_loss)
+# np.savetxt("Saved_models/mlp3_call_3_train_losses.txt", 
+#             numpy__train_loss, delimiter=",")
+# np.savetxt("Saved_models/mlp3_call_3_validation_losses.txt", 
+#             numpy_validation_loss, delimiter=",")
+
+# # LR = 1e-6, batch size = 4096, epochs = 10
+# model.compile(loss = constrained_mse, 
+#               optimizer = keras.optimizers.Adam(lr=1e-6), 
+#               metrics = [measure_arbitrage])
+# history = model.fit(call_X_train, call_y_train, 
+#                     batch_size=4096, epochs=10, 
+#                     validation_split = 0.01, verbose=1)
+# model.save('Saved_models/mlp3_call_4')
+# train_loss = history.history["loss"]
+# validation_loss = history.history["val_loss"]
+# numpy__train_loss = np.array(train_loss)
+# numpy_validation_loss = np.array(validation_loss)
+# np.savetxt("Saved_models/mlp3_call_4_train_losses.txt", 
+#             numpy__train_loss, delimiter=",")
+# np.savetxt("Saved_models/mlp3_call_4_validation_losses.txt", 
+#             numpy_validation_loss, delimiter=",")
+
+# QUICK TEST
+model.compile(loss = "mse", optimizer = keras.optimizers.Adam())
+# model.compile(loss = constrained_mse, optimizer = keras.optimizers.Adam())
+# model.compile(loss = constrained_mse, optimizer = keras.optimizers.Adam(), 
+#                metrics = [measure_arbitrage])
+history = model.fit(call_X_train, call_y_train, 
+                    batch_size = 4096, epochs = 1,
+                    validation_split = 0.01, verbose = 1)
+model.save('Saved_models/mlp3_call_test')
+train_loss = history.history["loss"]
+validation_loss = history.history["val_loss"]
+numpy__train_loss = np.array(train_loss)
+numpy_validation_loss = np.array(validation_loss)
+np.savetxt("Saved_models/mlp3_call_test_train_losses.txt", 
+            numpy__train_loss, delimiter=",")
+np.savetxt("Saved_models/mlp3_call_test_validation_losses.txt", 
+            numpy_validation_loss, delimiter=",")
 
