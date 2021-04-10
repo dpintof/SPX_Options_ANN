@@ -6,6 +6,18 @@ Created on Tue Mar 30 07:53:08 2021
 @author: Diogo
 """
 
+"""
+Clear the console and remove all variables present on the namespace. This is 
+useful to prevent Python from consuming more RAM each time I run the code.
+"""
+try:
+    from IPython import get_ipython
+    get_ipython().magic('clear')
+    get_ipython().magic('reset -f')
+except:
+    pass
+
+
 from os import path
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -36,8 +48,9 @@ call_df = df[df.OptionType == 'c'].drop(['OptionType'], axis=1)
 
 
 # Split call_df into random train and test subsets, for inputs (X) and output (y)
-call_X_train, call_X_test, call_y_train, call_y_test = train_test_split(call_df.drop(["Option_Average_Price"],
-                    axis = 1), call_df.Option_Average_Price, test_size = 0.01)
+call_X_train, call_X_test, call_y_train, call_y_test = (train_test_split(
+    call_df.drop(["Option_Average_Price"], 
+    axis = 1), call_df.Option_Average_Price, test_size = 0.01))
 
 
 # Create model using Keras' Functional API
@@ -240,9 +253,11 @@ def measure_arbitrage(y_true, y_pred):
 
 # QUICK TEST
 # model.compile(loss = "mse", optimizer = keras.optimizers.Adam())
-# model.compile(loss = constrained_mse, optimizer = keras.optimizers.Adam())
-model.compile(loss = constrained_mse, optimizer = keras.optimizers.Adam(), 
-                metrics = [measure_arbitrage])
+# model.compile(loss = "mse", optimizer = keras.optimizers.Adam(), 
+#               metrics = [measure_arbitrage])
+model.compile(loss = constrained_mse, optimizer = keras.optimizers.Adam())
+# model.compile(loss = constrained_mse, optimizer = keras.optimizers.Adam(), 
+#                 metrics = [measure_arbitrage])
 
 history = model.fit(call_X_train, call_y_train, 
                     batch_size = 4096, epochs = 20,
