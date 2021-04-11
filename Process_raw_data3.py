@@ -30,6 +30,11 @@ import numpy as np
     # April 2019
 underlying = pd.read_csv("Raw data/Underlying/SPX_December_2003-April_2019.csv")
 
+# def linear(x):
+#     return x
+
+# underlying = underlying.apply(func = linear, axis = 0, raw = True)
+
 # Convert dates on Date columns to datetime64
 underlying['Date'] = pd.to_datetime(underlying['Date'])
 
@@ -157,65 +162,128 @@ date3 = pd.to_datetime("2006-02-08")
 date4 = pd.to_datetime("2008-12-10")
 date5 = pd.to_datetime("2008-12-18")
 date6 = pd.to_datetime("2008-12-24")
+qd = options["QuoteDate"]
+ttm = options["Time_to_Maturity"]
+list_df = [qd, ttm]
+df_func = pd.concat(list_df, axis = 1)
 
-# for index, row in options.iterrows():
-for index, row in tqdm(options.iterrows()):
-# The following code is complicated because there aren't data for certain 
+def sub_mat(df):
+    global differences
+    
+    # The following code is complicated because there aren't data for certain 
     # maturities and time periods.
-    if date1 <= row.QuoteDate <= date2:
-        if date1 <= row.QuoteDate <= date3 and row.Time_to_Maturity > 25:
-            list_s = ([abs(maturity - row.Time_to_Maturity) for maturity in 
+    if date1 <= df["QuoteDate"] <= date2:
+        if date1 <= df["QuoteDate"] <= date3 and df["Time_to_Maturity"] > 25:
+            list_s = ([abs(maturity - df["Time_to_Maturity"]) for maturity in 
               treasury_maturities5])
             list_s = [list_s + [40]] # 40 is an arbitrary number bigger than 30
             # differences.loc[len(differences)] = list_s
             differences = differences.append(pd.DataFrame(list_s, 
                         columns = treasury_maturities), ignore_index = True) 
-        elif (date4 or date5 or date6) == (row.QuoteDate and 1.5/12 <= 
+        elif (date4 or date5 or date6) == (df["QuoteDate"] and 1.5/12 <= 
                                            row.Time_to_Maturity <= 3.5/12):
             list_s = [0, 40, 40]
-            list_s = [list_s + [abs(maturity - row.Time_to_Maturity) for 
+            list_s = [list_s + [abs(maturity - df["Time_to_Maturity"]) for 
                                    maturity in treasury_maturities3]]
             differences = differences.append(pd.DataFrame(list_s, 
                         columns = treasury_maturities), ignore_index = True)
-        elif (date4 or date5 or date6) == (row.QuoteDate and 3.5/12 < 
-                                           row.Time_to_Maturity <= 4.5/12):    
-            list_s = ([abs(maturity - row.Time_to_Maturity) for maturity in 
+        elif (date4 or date5 or date6) == (df["QuoteDate"] and 3.5/12 < 
+                                           df["Time_to_Maturity"] <= 4.5/12):    
+            list_s = ([abs(maturity - df["Time_to_Maturity"]) for maturity in 
                            treasury_maturities2])
             list_s = list_s + [40, 40, 0]
-            list_s = [list_s + [abs(maturity - row.Time_to_Maturity) for 
+            list_s = [list_s + [abs(maturity - df["Time_to_Maturity"]) for 
                                    maturity in treasury_maturities4]]
-            # differences.loc[len(differences)] = list_s
             differences = differences.append(pd.DataFrame(list_s, 
                         columns = treasury_maturities), ignore_index = True)
         else:
-            if 1.5/12 <= row.Time_to_Maturity <= 2/12:
+            if 1.5/12 <= df["Time_to_Maturity"] <= 2/12:
                 list_s = [0, 40]
-                list_s = [list_s + [abs(maturity - row.Time_to_Maturity) for maturity in 
-              treasury_maturities1]]
+                list_s = [list_s + [abs(maturity - df["Time_to_Maturity"]) 
+                                    for maturity in treasury_maturities1]]
                 # differences.loc[len(differences)] = list_s
                 differences = differences.append(pd.DataFrame(list_s, 
                         columns = treasury_maturities), ignore_index = True)
-            elif 2/12 < row.Time_to_Maturity <= 2.5/12:
-                list_s = ([abs(maturity - row.Time_to_Maturity) for maturity in 
-              treasury_maturities2])
+            elif 2/12 < df["Time_to_Maturity"] <= 2.5/12:
+                list_s = ([abs(maturity - df["Time_to_Maturity"]) for maturity 
+                           in treasury_maturities2])
                 list_s = list_s + [40, 0]
-                list_s = [list_s + [abs(maturity - row.Time_to_Maturity) for maturity in 
+                list_s = [list_s + [abs(maturity - df["Time_to_Maturity"]) for maturity in 
               treasury_maturities3]]
-                # differences.loc[len(differences)] = list_s
                 differences = differences.append(pd.DataFrame(list_s, 
                         columns = treasury_maturities), ignore_index = True)
             else:
-                list_s = [[abs(maturity - row.Time_to_Maturity) for maturity in 
+                list_s = [[abs(maturity - df["Time_to_Maturity"]) for maturity in 
               treasury_maturities]]
-                # differences.loc[len(differences)] = list_s
                 differences = differences.append(pd.DataFrame(list_s, 
                         columns = treasury_maturities), ignore_index = True)
     else:        
-        list_s = [[abs(maturity - row.Time_to_Maturity) for maturity in 
+        list_s = [[abs(maturity - df["Time_to_Maturity"]) for maturity in 
               treasury_maturities]]
-        # differences.loc[len(differences)] = list_s
         differences = differences.append(pd.DataFrame(list_s, 
                         columns = treasury_maturities), ignore_index = True)
+    
+    return differences
+
+tqdm(df_func.apply(func = sub_mat, axis = 0))
+
+# # for index, row in options.iterrows():
+# for index, row in tqdm(options.iterrows()):
+# # The following code is complicated because there aren't data for certain 
+#     # maturities and time periods.
+#     if date1 <= row.QuoteDate <= date2:
+#         if date1 <= row.QuoteDate <= date3 and row.Time_to_Maturity > 25:
+#             list_s = ([abs(maturity - row.Time_to_Maturity) for maturity in 
+#               treasury_maturities5])
+#             list_s = [list_s + [40]] # 40 is an arbitrary number bigger than 30
+#             # differences.loc[len(differences)] = list_s
+#             differences = differences.append(pd.DataFrame(list_s, 
+#                         columns = treasury_maturities), ignore_index = True) 
+#         elif (date4 or date5 or date6) == (row.QuoteDate and 1.5/12 <= 
+#                                            row.Time_to_Maturity <= 3.5/12):
+#             list_s = [0, 40, 40]
+#             list_s = [list_s + [abs(maturity - row.Time_to_Maturity) for 
+#                                    maturity in treasury_maturities3]]
+#             differences = differences.append(pd.DataFrame(list_s, 
+#                         columns = treasury_maturities), ignore_index = True)
+#         elif (date4 or date5 or date6) == (row.QuoteDate and 3.5/12 < 
+#                                            row.Time_to_Maturity <= 4.5/12):    
+#             list_s = ([abs(maturity - row.Time_to_Maturity) for maturity in 
+#                            treasury_maturities2])
+#             list_s = list_s + [40, 40, 0]
+#             list_s = [list_s + [abs(maturity - row.Time_to_Maturity) for 
+#                                    maturity in treasury_maturities4]]
+#             differences = differences.append(pd.DataFrame(list_s, 
+#                         columns = treasury_maturities), ignore_index = True)
+#         else:
+#             if 1.5/12 <= row.Time_to_Maturity <= 2/12:
+#                 list_s = [0, 40]
+#                 list_s = [list_s + [abs(maturity - row.Time_to_Maturity) for maturity in 
+#               treasury_maturities1]]
+#                 # differences.loc[len(differences)] = list_s
+#                 differences = differences.append(pd.DataFrame(list_s, 
+#                         columns = treasury_maturities), ignore_index = True)
+#             elif 2/12 < row.Time_to_Maturity <= 2.5/12:
+#                 list_s = ([abs(maturity - row.Time_to_Maturity) for maturity in 
+#               treasury_maturities2])
+#                 list_s = list_s + [40, 0]
+#                 list_s = [list_s + [abs(maturity - row.Time_to_Maturity) for maturity in 
+#               treasury_maturities3]]
+#                 # differences.loc[len(differences)] = list_s
+#                 differences = differences.append(pd.DataFrame(list_s, 
+#                         columns = treasury_maturities), ignore_index = True)
+#             else:
+#                 list_s = [[abs(maturity - row.Time_to_Maturity) for maturity in 
+#               treasury_maturities]]
+#                 # differences.loc[len(differences)] = list_s
+#                 differences = differences.append(pd.DataFrame(list_s, 
+#                         columns = treasury_maturities), ignore_index = True)
+#     else:        
+#         list_s = [[abs(maturity - row.Time_to_Maturity) for maturity in 
+#               treasury_maturities]]
+#         # differences.loc[len(differences)] = list_s
+#         differences = differences.append(pd.DataFrame(list_s, 
+#                         columns = treasury_maturities), ignore_index = True)
 
 # Add to the options df, the columns for each Treasury maturity containing the 
     # differences calculated previously
