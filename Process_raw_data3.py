@@ -106,24 +106,27 @@ options_files = list(p.glob("UnderlyingOptionsEODQuotes_*.csv"))
 options_columns = (pd.read_csv("Raw data/Options/SPX_20040102_20190430/UnderlyingOptionsEODQuotes_2004-01-02.csv")).columns
 options = pd.DataFrame(columns = options_columns)
 
-with concurrent.futures.ProcessPoolExecutor() as executor:
-    options_data_list = list(executor.map(pd.read_csv, options_files))
+# with concurrent.futures.ProcessPoolExecutor() as executor:
+#     options_data_list = list(executor.map(pd.read_csv, options_files))
 
-def create_options_df(option_data):
-    option = pd.DataFrame(option_data, options_columns)
+# options = pd.concat(options_data_list)
+# options = pd.concat(options_data_list, ignore_index = True)
+
+# def create_options_df(option_data):
+#     global options
+#     options = options.append(option_data)
+#     return options
+    
+# with concurrent.futures.ProcessPoolExecutor() as executor:
+#     executor.map(create_options_df, tqdm(options_data_list))
+
+def create_options_df(file):
+    df = pd.read_csv(file)
     global options
-    options.append(option)
+    options = options.append(df)
 
-# with concurrent.futures.ProcessPoolExecutor() as executor:
-#     for option_data in tqdm(options_data_list):    
-#         executor.submit(create_options_df, option_data)
-        
 with concurrent.futures.ProcessPoolExecutor() as executor:
-    executor.map(create_options_df, tqdm(options_data_list))      
-
-# with concurrent.futures.ProcessPoolExecutor() as executor:
-#     options = pd.DataFrame(list(executor.map(pd.read_csv, tqdm(options_files))), 
-#                            options_columns)
+    executor.map(create_options_df, tqdm(options_files))
 
 # with concurrent.futures.ThreadPoolExecutor() as executor:
 #     executor.map(create_options_df, [pd.read_csv(f) for f in options_files])
