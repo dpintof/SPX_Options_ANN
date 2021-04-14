@@ -100,37 +100,13 @@ options_files = list(p.glob("UnderlyingOptionsEODQuotes_*.csv"))
 
 # Creates df from all files
 # options = pd.concat([pd.read_csv(f) for f in options_files])
-# options = pd.concat([pd.read_csv(f) for f in tqdm(options_files)])
-
-
-options_columns = (pd.read_csv("Raw data/Options/SPX_20040102_20190430/UnderlyingOptionsEODQuotes_2004-01-02.csv")).columns
-options = pd.DataFrame(columns = options_columns)
+options = pd.concat([pd.read_csv(f) for f in tqdm(options_files)])
 
 # with concurrent.futures.ProcessPoolExecutor() as executor:
 #     options_data_list = list(executor.map(pd.read_csv, options_files))
 
-# options = pd.concat(options_data_list)
-# options = pd.concat(options_data_list, ignore_index = True)
-
-# def create_options_df(option_data):
-#     global options
-#     options = options.append(option_data)
-#     return options
-    
-# with concurrent.futures.ProcessPoolExecutor() as executor:
-#     executor.map(create_options_df, tqdm(options_data_list))
-
-def create_options_df(file):
-    df = pd.read_csv(file)
-    global options
-    options = options.append(df)
-
-with concurrent.futures.ProcessPoolExecutor() as executor:
-    executor.map(create_options_df, tqdm(options_files))
-
-# with concurrent.futures.ThreadPoolExecutor() as executor:
-#     executor.map(create_options_df, [pd.read_csv(f) for f in options_files])
-
+# options = pd.concat(tqdm(options_data_list))
+# options = pd.concat(tqdm(options_data_list), ignore_index = True)
 
 # TESTING WITH A SMALL SAMPLE
 # options = pd.read_csv("Raw data/Options/SPX_20040102_20190430/"
@@ -166,6 +142,16 @@ for index, row in tqdm(options.iterrows()):
     d2 = row.QuoteDate
     d = years_between(d1, d2)
     ttm.append(d)
+
+# def ttm_option(expi, qd):
+#     ttm = years_between(expi, qd)
+#     return ttm
+    
+# with concurrent.futures.ProcessPoolExecutor() as executor:
+#     ttm_list = list(executor.map(ttm_option, tqdm(options["expiration"]), 
+#                             options["QuoteDate"]))
+    
+# options["Time_to_Maturity"] = ttm_list
     
 # Create new column with the TTM
 options['Time_to_Maturity'] = ttm
