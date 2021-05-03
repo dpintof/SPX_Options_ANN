@@ -6,6 +6,16 @@ Created on Sun Feb 21 09:05:11 2021
 @author: Diogo
 """
 
+"""Clear the console and remove all variables present on the namespace. This is 
+useful to prevent Python from consuming more RAM each time I run the code."""
+try:
+    from IPython import get_ipython
+    get_ipython().magic('clear')
+    get_ipython().magic('reset -f')
+except:
+    pass
+
+
 from tensorflow.keras import layers
 from tensorflow import keras
 import pandas as pd
@@ -16,23 +26,27 @@ from os import path
 
 basepath = path.dirname(__file__)
 filepath = path.abspath(path.join(basepath, "..", 
-                                  "Processed data/options-df.csv"))
+                                  "Processed data/options_final.csv"))
 options_df = pd.read_csv(filepath)
 options_df = options_df.drop(columns=['Sigma_20_Days_Annualized', 
-                                      "Underlying_Price", "bid_eod", "ask_eod"])
+                                      "Underlying_Price", "bid_eod",
+                                      "ask_eod"])
 filepath = path.abspath(path.join(basepath, "..", 
-                                  "Processed data/underlying_df.csv"))
+                                  "Processed data/underlying.csv"))
 underlying = pd.read_csv(filepath)
 
 
 # Hyperparameters
 n_hidden_layers = 3
-n_features = 4 # Strike price, time to maturity, risk-free rate and price of 
-    # the underlying.
+n_features = 4 
+"""Features: Strike price, time to maturity, risk-free rate and price of the 
+underlying."""
+
 n_units = 100 # Number of neurons of the hidden layers in the MLP1 network.
 n_units_lstm = 8 # Number of neurons of the LSTM layers
 n_batch = 4096
-n_epochs = 20
+n_epochs_calls = 10
+n_epochs_puts = 10
 N_TIMESTEPS = 20
 
 
@@ -56,7 +70,8 @@ price_history[cols] = price_history[cols].apply(pd.to_numeric, errors='coerce')
     # The last 2 rows are necessary because if the prices of the underlying are
         # not in a numeric data type, Keras' fit function will not work.
 
-# Add columns of price_history to options_df, according to the date in "QuoteDate"
+"""Add columns of price_history to options_df, according to the date in 
+"QuoteDate"""
 joined = options_df.join(price_history.set_index(0), on='QuoteDate')
 
 # Create dfs for calls and puts
@@ -65,11 +80,14 @@ call_df = call_df.drop(columns=['QuoteDate'])
 put_df = joined[joined.OptionType == 'p'].drop(['OptionType'], axis=1)
 put_df = put_df.drop(columns=['QuoteDate'])
 
+
 # Split dfs into random train and test arrays, for inputs (X) and output (y)
-call_X_train, call_X_test, call_y_train, call_y_test = train_test_split(call_df.drop(["Option_Average_Price"], 
-            axis=1).values, call_df.Option_Average_Price.values, test_size=0.01)
-put_X_train, put_X_test, put_y_train, put_y_test = train_test_split(put_df.drop(["Option_Average_Price"], 
-            axis=1).values, put_df.Option_Average_Price.values, test_size=0.01)
+call_X_train, call_X_test, call_y_train, call_y_test = (train_test_split(
+    call_df.drop(["Option_Average_Price"], axis=1).values, 
+    call_df.Option_Average_Price.values, test_size=0.01))
+put_X_train, put_X_test, put_y_train, put_y_test = (train_test_split(
+    put_df.drop(["Option_Average_Price"], axis=1).values, 
+    put_df.Option_Average_Price.values, test_size=0.01))
 
 # Create lists composed of a 3-dimensional array containing the N_TIMESTEPS 
     # prices of the underlying per row and an array with n_feature input values
@@ -151,6 +169,7 @@ def make_model():
     # Actually create the model
     return keras.Model(inputs = [close_history, input2], outputs = output)
 
+
 # # Create a Sequential model that is a linear stack of layers
 # def make_model():
 #     # Create input layer. The inputs are the closing prices of the 
@@ -188,40 +207,42 @@ call_model = make_model()
 # call_model.summary()
 put_model = make_model()
 
-# Configure the learning process, train the models, save models and their 
-    # losses, with different learning rates, batch sizes and number of epochs.
-call_model.compile(optimizer = keras.optimizers.Adam(lr=1e-2), loss='mse')
-history = call_model.fit(call_X_train, call_y_train, 
-                    batch_size=n_batch, epochs=n_epochs, 
-                    validation_split = 0.01, verbose=1)
-call_model.save('Saved_models/lstm_call_1')
-train_loss = history.history["loss"]
-validation_loss = history.history["val_loss"]
-numpy__train_loss = np.array(train_loss)
-numpy_validation_loss = np.array(validation_loss)
-np.savetxt("Saved_models/lstm_call_1_train_losses.txt", 
-            numpy__train_loss, delimiter=",")
-np.savetxt("Saved_models/lstm_call_1_validation_losses.txt", 
-            numpy_validation_loss, delimiter=",")
 
-call_model.compile(optimizer = keras.optimizers.Adam(lr=1e-3), loss='mse')
-history = call_model.fit(call_X_train, call_y_train, 
-                    batch_size=n_batch, epochs=n_epochs, 
-                    validation_split = 0.01, verbose=1)
-call_model.save('Saved_models/lstm_call_2')
-train_loss = history.history["loss"]
-validation_loss = history.history["val_loss"]
-numpy__train_loss = np.array(train_loss)
-numpy_validation_loss = np.array(validation_loss)
-np.savetxt("Saved_models/lstm_call_2_train_losses.txt", 
-            numpy__train_loss, delimiter=",")
-np.savetxt("Saved_models/lstm_call_2_validation_losses.txt", 
-            numpy_validation_loss, delimiter=",")
+"""Configure the learning process, train the models, save models and their 
+losses, with different learning rates, batch sizes and number of epochs."""
 
-call_model.compile(optimizer = keras.optimizers.Adam(lr=1e-4), loss='mse')
-history = call_model.fit(call_X_train, call_y_train, 
-                    batch_size=n_batch, epochs=n_epochs, 
-                    validation_split = 0.01, verbose=1)
+# call_model.compile(optimizer = keras.optimizers.Adam(lr = 1e-2), loss = 'mse')
+# history = call_model.fit(call_X_train, call_y_train, batch_size = n_batch, 
+#                     epochs = n_epochs_calls, validation_split = 0.01, verbose = 1)
+# call_model.save('Saved_models/lstm_call_1')
+# train_loss = history.history["loss"]
+# validation_loss = history.history["val_loss"]
+# numpy__train_loss = np.array(train_loss)
+# numpy_validation_loss = np.array(validation_loss)
+# np.savetxt("Saved_models/lstm_call_1_train_losses.txt", 
+#             numpy__train_loss, delimiter=",")
+# np.savetxt("Saved_models/lstm_call_1_validation_losses.txt", 
+#             numpy_validation_loss, delimiter=",")
+
+
+# call_model.compile(optimizer = keras.optimizers.Adam(lr = 1e-3), loss = 'mse')
+# history = call_model.fit(call_X_train, call_y_train, batch_size = n_batch, 
+#                           epochs = n_epochs_calls, validation_split = 0.01, 
+#                           verbose = 1)
+# call_model.save('Saved_models/lstm_call_2')
+# train_loss = history.history["loss"]
+# validation_loss = history.history["val_loss"]
+# numpy__train_loss = np.array(train_loss)
+# numpy_validation_loss = np.array(validation_loss)
+# np.savetxt("Saved_models/lstm_call_2_train_losses.txt", 
+#             numpy__train_loss, delimiter=",")
+# np.savetxt("Saved_models/lstm_call_2_validation_losses.txt", 
+#             numpy_validation_loss, delimiter=",")
+
+call_model.compile(optimizer = keras.optimizers.Adam(lr = 1e-4), loss = 'mse')
+history = call_model.fit(call_X_train, call_y_train, batch_size = n_batch, 
+                          epochs = n_epochs_calls, validation_split = 0.01, 
+                          verbose = 1)
 call_model.save('Saved_models/lstm_call_3')
 train_loss = history.history["loss"]
 validation_loss = history.history["val_loss"]
@@ -232,59 +253,88 @@ np.savetxt("Saved_models/lstm_call_3_train_losses.txt",
 np.savetxt("Saved_models/lstm_call_3_validation_losses.txt", 
             numpy_validation_loss, delimiter=",")
 
-put_model.compile(optimizer = keras.optimizers.Adam(lr=1e-2), loss='mse')
-history = put_model.fit(put_X_train, put_y_train, 
-                    batch_size=n_batch, epochs=n_epochs, 
-                    validation_split = 0.01, verbose=1)
-put_model.save('Saved_models/lstm_put_1')
-train_loss = history.history["loss"]
-validation_loss = history.history["val_loss"]
-numpy__train_loss = np.array(train_loss)
-numpy_validation_loss = np.array(validation_loss)
-np.savetxt("Saved_models/lstm_put_1_train_losses.txt", 
-            numpy__train_loss, delimiter=",")
-np.savetxt("Saved_models/lstm_put_1_validation_losses.txt", 
-            numpy_validation_loss, delimiter=",")
+# call_model.compile(optimizer = keras.optimizers.Adam(lr = 1e-5), loss = 'mse')
+# history = call_model.fit(call_X_train, call_y_train, batch_size = n_batch, 
+#                           epochs = n_epochs_calls, validation_split = 0.01, 
+#                           verbose = 1)
+# call_model.save('Saved_models/lstm_call_4')
+# train_loss = history.history["loss"]
+# validation_loss = history.history["val_loss"]
+# numpy__train_loss = np.array(train_loss)
+# numpy_validation_loss = np.array(validation_loss)
+# np.savetxt("Saved_models/lstm_call_4_train_losses.txt", 
+#             numpy__train_loss, delimiter=",")
+# np.savetxt("Saved_models/lstm_call_4_validation_losses.txt", 
+#             numpy_validation_loss, delimiter=",")
 
-put_model.compile(optimizer = keras.optimizers.Adam(lr=1e-3), loss='mse')
-history = put_model.fit(put_X_train, put_y_train, 
-                    batch_size=n_batch, epochs=n_epochs, 
-                    validation_split = 0.01, verbose=1)
-put_model.save('Saved_models/lstm_put_2')
-train_loss = history.history["loss"]
-validation_loss = history.history["val_loss"]
-numpy__train_loss = np.array(train_loss)
-numpy_validation_loss = np.array(validation_loss)
-np.savetxt("Saved_models/lstm_put_2_train_losses.txt", 
-            numpy__train_loss, delimiter=",")
-np.savetxt("Saved_models/lstm_put_2_validation_losses.txt", 
-            numpy_validation_loss, delimiter=",")
+# put_model.compile(optimizer = keras.optimizers.Adam(lr = 1e-2), loss = 'mse')
+# history = put_model.fit(put_X_train, put_y_train, batch_size = n_batch, 
+#                         epochs = n_epochs_puts, validation_split = 0.01,
+#                         verbose = 1)
+# put_model.save('Saved_models/lstm_put_1')
+# train_loss = history.history["loss"]
+# validation_loss = history.history["val_loss"]
+# numpy__train_loss = np.array(train_loss)
+# numpy_validation_loss = np.array(validation_loss)
+# np.savetxt("Saved_models/lstm_put_1_train_losses.txt", 
+#             numpy__train_loss, delimiter=",")
+# np.savetxt("Saved_models/lstm_put_1_validation_losses.txt", 
+#             numpy_validation_loss, delimiter=",")
 
-put_model.compile(optimizer = keras.optimizers.Adam(lr=1e-4), loss='mse')
-history = put_model.fit(put_X_train, put_y_train, 
-                    batch_size=n_batch, epochs=n_epochs, 
-                    validation_split = 0.01, verbose=1)
-put_model.save("Saved_models/lstm_put_3")
+# put_model.compile(optimizer = keras.optimizers.Adam(lr = 1e-3), loss = 'mse')
+# history = put_model.fit(put_X_train, put_y_train, batch_size = n_batch, 
+#                         epochs = n_epochs_puts, validation_split = 0.01,
+#                         verbose = 1)
+# put_model.save('Saved_models/lstm_put_2')
+# train_loss = history.history["loss"]
+# validation_loss = history.history["val_loss"]
+# numpy__train_loss = np.array(train_loss)
+# numpy_validation_loss = np.array(validation_loss)
+# np.savetxt("Saved_models/lstm_put_2_train_losses.txt", 
+#             numpy__train_loss, delimiter=",")
+# np.savetxt("Saved_models/lstm_put_2_validation_losses.txt", 
+#             numpy_validation_loss, delimiter=",")
+
+# put_model.compile(optimizer = keras.optimizers.Adam(lr = 1e-4), loss= 'mse')
+# history = put_model.fit(put_X_train, put_y_train, batch_size = n_batch, 
+#                         epochs = n_epochs_puts, validation_split = 0.01, 
+#                         verbose = 1)
+# put_model.save("Saved_models/lstm_put_3")
+# train_loss = history.history["loss"]
+# validation_loss = history.history["val_loss"]
+# numpy__train_loss = np.array(train_loss)
+# numpy_validation_loss = np.array(validation_loss)
+# np.savetxt("Saved_models/lstm_put_3_train_losses.txt", 
+#             numpy__train_loss, delimiter=",")
+# np.savetxt("Saved_models/lstm_put_3_validation_losses.txt", 
+#             numpy_validation_loss, delimiter=",")
+
+put_model.compile(optimizer = keras.optimizers.Adam(lr = 1e-5), loss = 'mse')
+history = put_model.fit(put_X_train, put_y_train, batch_size = n_batch, 
+                        epochs = n_epochs_puts, validation_split = 0.01,
+                        verbose = 1)
+put_model.save('Saved_models/lstm_put_4')
 train_loss = history.history["loss"]
 validation_loss = history.history["val_loss"]
 numpy__train_loss = np.array(train_loss)
 numpy_validation_loss = np.array(validation_loss)
-np.savetxt("Saved_models/lstm_put_3_train_losses.txt", 
+np.savetxt("Saved_models/lstm_put_4_train_losses.txt", 
             numpy__train_loss, delimiter=",")
-np.savetxt("Saved_models/lstm_put_3_validation_losses.txt", 
+np.savetxt("Saved_models/lstm_put_4_validation_losses.txt", 
             numpy_validation_loss, delimiter=",")
 
 # # QUICK TEST
 # call_model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr=1e-6))
 # history = call_model.fit(call_X_train, call_y_train, 
-#                 batch_size=4096, epochs=1, validation_split = 0.01, verbose=1)
-# call_model.save('Saved_models/lstm_call_5')
+#             batch_size = 4096, epochs = 1, validation_split = 0.01,
+#             verbose = 1)
+# call_model.save('Saved_models/lstm_call_test')
 # train_loss = history.history["loss"]
 # validation_loss = history.history["val_loss"]
 # numpy__train_loss = np.array(train_loss)
 # numpy_validation_loss = np.array(validation_loss)
-# np.savetxt("Saved_models/lstm_call_5_train_losses.txt", 
+# np.savetxt("Saved_models/lstm_call_test_train_losses.txt", 
 #             numpy__train_loss, delimiter=",")
-# np.savetxt("Saved_models/lstm_call_5_validation_losses.txt", 
+# np.savetxt("Saved_models/lstm_call_test_validation_losses.txt", 
 #             numpy_validation_loss, delimiter=",")
 

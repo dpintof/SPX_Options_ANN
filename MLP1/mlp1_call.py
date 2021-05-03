@@ -6,6 +6,16 @@ Created on Mon Feb 15 12:50:11 2021
 @author: Diogo
 """
 
+"""Clear the console and remove all variables present on the namespace. This is 
+useful to prevent Python from consuming more RAM each time I run the code."""
+try:
+    from IPython import get_ipython
+    get_ipython().magic('clear')
+    get_ipython().magic('reset -f')
+except:
+    pass
+
+
 # from keras.models import Sequential
 # from keras.layers import Dense, LeakyReLU, BatchNormalization
 # from keras.optimizers import Adam
@@ -27,7 +37,8 @@ n_epochs = 40
 
 # Create DataFrame (df) for calls
 basepath = path.dirname(__file__)
-filepath = path.abspath(path.join(basepath, "..", "Processed data/options-df.csv"))
+filepath = path.abspath(path.join(basepath, "..", 
+                                  "Processed data/options_final.csv"))
 df = pd.read_csv(filepath)
 # df = df.dropna(axis=0)
 df = df.drop(columns=['bid_eod', 'ask_eod', "QuoteDate"])
@@ -113,8 +124,8 @@ model = keras.Model(inputs=inputs, outputs=outputs)
 # model.add(Dense(1, activation='relu'))
 
 
-# Configure the learning process, train the model, save model and it's losses, 
-#     with different learning rates, batch sizes and number of epochs.
+"""Configure the learning process, train the model, save model and it's 
+losses, with different learning rates, batch sizes and number of epochs."""
     
 # Configure the learning process of the model with a loss function and an 
     # optimizer. The optimizer changes the weights in order to minimize the 
@@ -189,13 +200,13 @@ np.savetxt("Saved_models/mlp1_call_4_validation_losses.txt",
 # history = model.fit(call_X_train, call_y_train, 
 #                     batch_size=4096, epochs=1, 
 #                     validation_split = 0.01, verbose=1)
-# model.save('Saved_models/mlp1_call_5')
+# model.save('Saved_models/mlp1_call_test')
 # train_loss = history.history["loss"]
 # validation_loss = history.history["val_loss"]
 # numpy__train_loss = np.array(train_loss)
 # numpy_validation_loss = np.array(validation_loss)
-# np.savetxt("Saved_models/mlp1_call_5_train_losses.txt", 
+# np.savetxt("Saved_models/mlp1_call_test_train_losses.txt", 
 #             numpy__train_loss, delimiter=",")
-# np.savetxt("Saved_models/mlp1_call_5_validation_losses.txt", 
+# np.savetxt("Saved_models/mlp1_call_test_validation_losses.txt", 
 #             numpy_validation_loss, delimiter=",")
 
