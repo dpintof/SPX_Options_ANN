@@ -27,6 +27,9 @@ options = pd.read_csv("Processed data/options_phase2.csv")
 """Remove options with Time_to_Maturity = 0"""
 options = options[options["Time_to_Maturity"] != 0]
 
+"""Remove option with Option_Average_Price = 0"""
+options = options[options["Option_Average_Price"] != 0]
+
 """Create list with the standard deviations that match each option's QuoteDate"""
 # Total number of options
 n_options = options.shape[0]

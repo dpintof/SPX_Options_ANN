@@ -27,6 +27,7 @@ from os import path
 
 
 N_TIMESTEPS = 20
+n_batch = 4096
 
 
 basepath = path.dirname(__file__)
@@ -150,9 +151,9 @@ def error_metrics(actual, predicted):
     return [mse, bias, aape, mape, pe5, pe10, pe20]
 
 call_metric_list = error_metrics(call_y_test, call_model.predict(call_X_test, 
-                            batch_size = 4096).reshape(call_y_test.shape[0]))
+                            batch_size = n_batch).reshape(call_y_test.shape[0]))
 put_metric_list = error_metrics(put_y_test, put_model.predict(put_X_test, 
-                            batch_size = 4096).reshape(put_y_test.shape[0]))
+                            batch_size = n_batch).reshape(put_y_test.shape[0]))
 
 (call_metric_list.insert(0, np.mean(np.square(call_y_train - 
             call_model.predict(call_X_train).reshape(call_y_train.shape[0])))))
