@@ -49,7 +49,7 @@ padded = np.insert(underlying[" Close"].values, 0,
 
 """Create Dataframe (df) where the first column is a date and the rest are 
 prices of the underlying. Each row has N_TIMESTEPS prices of the underlying, 
-ordered by date, in descending order (meaning from recent to older datess, from 
+ordered by date, in descending order (meaning from recent to older dates), from 
 left to right. From one row to the next each price is replaced by the one 
 observed in the next date."""
 rolled = np.column_stack([np.roll(padded, i) for i in range(N_TIMESTEPS)])
