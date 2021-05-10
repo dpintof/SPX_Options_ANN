@@ -325,7 +325,8 @@ Get a 3-month risk-free rate that match each option's QuoteDate
 """
 """Create list with the 3-month Treasury rates that match each option's 
 QuoteDate"""
-print("\n" + f"Total number of options: {options.shape[0]}")
+# print("\n" + f"Total number of options: {options.shape[0]}")
+n_options = options.shape[0] # Total number of options
 
 rf_rate = []
 QuoteDate_df = options[['QuoteDate']]
@@ -336,7 +337,7 @@ QuoteDate_df = (QuoteDate_df.assign(in_treasury =
 #     (rf_rate.append(float(treasury["0.25"].loc[(treasury["Date"] == 
 #                                                 row.QuoteDate)])))
 
-for index, row in tqdm(QuoteDate_df.iterrows()):
+for index, row in tqdm(QuoteDate_df.iterrows(), total = n_options):
 # for index, row in tqdm(options.iterrows()):
     if row.in_treasury == True:
         (rf_rate.append(float(treasury["0.25"].loc[(treasury["Date"] 

@@ -22,11 +22,13 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from os import path
+from sklearn.preprocessing import MinMaxScaler
 
 
+"""Create DFs for options and underlying"""
 basepath = path.dirname(__file__)
 filepath = path.abspath(path.join(basepath, "..", 
-                                  "Processed data/options_final.csv"))
+                                  "Processed data/options_phase3_final.csv"))
 options_df = pd.read_csv(filepath)
 options_df = options_df.drop(columns=['Sigma_20_Days_Annualized', 
                                       "Underlying_Price", "bid_eod",
@@ -34,6 +36,9 @@ options_df = options_df.drop(columns=['Sigma_20_Days_Annualized',
 filepath = path.abspath(path.join(basepath, "..", 
                                   "Processed data/underlying.csv"))
 underlying = pd.read_csv(filepath)
+
+"""Rescaling of the data"""
+
 
 
 # Hyperparameters
@@ -72,7 +77,7 @@ price_history[cols] = price_history[cols].apply(pd.to_numeric, errors='coerce')
 
 """Add columns of price_history to options_df, according to the date in 
 "QuoteDate"""
-joined = options_df.join(price_history.set_index(0), on='QuoteDate')
+joined = options_df.join(price_history.set_index(0), on = 'QuoteDate')
 
 # Create dfs for calls and puts
 call_df = joined[joined.OptionType == 'c'].drop(['OptionType'], axis=1)

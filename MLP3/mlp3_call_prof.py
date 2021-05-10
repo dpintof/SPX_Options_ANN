@@ -6,6 +6,16 @@ Created on Fri Apr  9 07:01:16 2021
 @author: Diogo
 """
 
+"""Clear the console and remove all variables present on the namespace. This is 
+useful to prevent Python from consuming more RAM each time I run the code."""
+try:
+    from IPython import get_ipython
+    get_ipython().magic('clear')
+    get_ipython().magic('reset -f')
+except:
+    pass
+
+
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from tensorflow import keras
@@ -22,7 +32,7 @@ n_epochs = 30
 
 
 # Create DataFrame (df) for calls
-call_df = pd.read_csv("call_df.csv")
+call_df = pd.read_csv("calls_prof.csv")
 
 
 # Split call_df into random train and test subsets, for inputs (X) and output (y)

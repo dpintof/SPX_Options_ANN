@@ -32,6 +32,9 @@ import numpy as np
 # n_cores = os.cpu_count() # Number of cores of the CPU
 
 
+print("3 lengthy commands will follow, with respective progress bars:")
+
+
 # Underlying asset
 # Create dataframe (df) for the data of the underlying from December 2003 to 
     # April 2019
@@ -62,7 +65,8 @@ the past 20 days
 underlying['Sigma_20_Days_Annualized'] = underlying['Sigma_20_Days'] * 250**0.5
 
 # Remove unnecessary columns
-underlying = underlying.drop([" Open", " High", " Low"], axis = 1)
+underlying = underlying.drop([" Open", " High", " Low", "Sigma_20_Days"], 
+                             axis = 1)
 
 # # Create csv file from the underlying df
 # underlying.to_csv('Processed data/underlying_df.csv', index=False)
@@ -142,7 +146,8 @@ options = pd.concat([pd.read_csv(f) for f in tqdm(options_files)])
 # Deletes rows for options with a type of option that isn't SPX or SPXW
 options = options.loc[options['root'].isin(["SPX", "SPXW"])]
 
-print(f"Total number of options: {options.shape[0]}")
+# print(f"Total number of options: {options.shape[0]}")
+n_options = options.shape[0] # Total number of options
 
 # Remove unnecessary columns
 options = options.drop(['underlying_symbol', 'root', 'open', 'high', 'low', 
@@ -167,7 +172,7 @@ def years_between(d1, d2):
 ttm = []
 
 # for index, row in options.iterrows():
-for index, row in tqdm(options.iterrows()):
+for index, row in tqdm(options.iterrows(), total = n_options):
     d1 = row.expiration
     d2 = row.QuoteDate
     d = years_between(d1, d2)
@@ -190,7 +195,7 @@ options['Time_to_Maturity'] = ttm
 option_average_price = []
 
 # for index, row in options.iterrows():
-for index, row in tqdm(options.iterrows()):
+for index, row in tqdm(options.iterrows(), total = n_options):
     bid = row.bid_eod
     ask = row.ask_eod
     average = (ask + bid) / 2

@@ -25,7 +25,7 @@ from tqdm import tqdm
 
 basepath = path.dirname(__file__)
 filepath = path.abspath(path.join(basepath, "..", 
-                                  "Processed data/options_final.csv"))
+                                  "Processed data/options_phase3_final.csv"))
 options_df = pd.read_csv(filepath)
 call_df = options_df[options_df.OptionType == 'c'].drop(['OptionType'], axis=1)
 put_df = options_df[options_df.OptionType == 'p'].drop(['OptionType'], axis=1)
@@ -67,6 +67,7 @@ n_put = put_df.shape[0]
 
 """Add BSM_Prediction column to both call_df and put_df"""
 tqdm.pandas()
+print("2 lengthy commands will follow, with respective progress bars")
 call_df['BSM_Prediction'] = call_df.progress_apply(black_scholes_call, 
                                                    axis = 1)
 put_df['BSM_Prediction'] = put_df.progress_apply(black_scholes_put, axis = 1)

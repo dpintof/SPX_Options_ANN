@@ -30,25 +30,25 @@ put = pd.read_csv("BSM_predictions/bsm_put.csv")
 # put_train = put.sample(frac=0.99)
 # put_test = put.loc[~put.index.isin(put_train.index)]
 
-def median(series):
-    n = series.shape[0]
-    center = (n + 1) / 2
-    if isinstance(center, int) == True:
-        median_value = series[center]
-    else:
-        median_value = (series[math.floor(center)] + series[math.ceil(center)]) / 2
-    return median_value
+# def median(series):
+#     n = series.shape[0]
+#     center = (n + 1) / 2
+#     if isinstance(center, int) == True:
+#         median_value = series[center]
+#     else:
+#         median_value = (series[math.floor(center)] + series[math.ceil(center)]) / 2
+#     return median_value
 
 def error_metrics(actual, predicted):
     diff = actual - predicted
     mse = np.mean(np.square(diff))
     rel = diff / actual
-    # bias = 100 * np.median(rel)
-    bias = 100 * median(rel)
+    bias = 100 * np.median(rel)
+    # bias = 100 * median(rel)
     aape = 100 * np.mean(np.abs(rel))
     # aape = 100 * (np.abs(rel)).sum() / rel.shape[0]
-    # mape = 100 * np.median(np.abs(rel))
-    mape = 100 * median(np.abs(rel))
+    mape = 100 * np.median(np.abs(rel))
+    # mape = 100 * median(np.abs(rel))
     pe5 = 100 * sum(np.abs(rel) < 0.05) / rel.shape[0]
     pe10 = 100 * sum(np.abs(rel) < 0.10) / rel.shape[0]
     pe20 = 100 * sum(np.abs(rel) < 0.20) / rel.shape[0]
