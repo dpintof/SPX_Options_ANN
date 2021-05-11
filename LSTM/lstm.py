@@ -23,6 +23,9 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from os import path
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import minmax_scale
+from keras.layers import Dense, Activation, LeakyReLU, BatchNormalization, LSTM, Bidirectional, Input, Concatenate
+from keras.models import Sequential, Model, load_model
 
 
 """Create DFs for options and underlying"""
@@ -35,10 +38,13 @@ options_df = options_df.drop(columns=['Sigma_20_Days_Annualized',
                                       "ask_eod"])
 filepath = path.abspath(path.join(basepath, "..", 
                                   "Processed data/underlying.csv"))
-underlying = pd.read_csv(filepath)
+underlying_df = pd.read_csv(filepath)
 
-"""Rescaling of the data"""
-
+# """Rescaling of the data"""
+# underlying_df[" Close"] = MinMaxScaler().fit_transform(underlying_df[" Close"])
+# underlying_df[" Close"] = minmax_scale(underlying_df[" Close"])
+# options_df["strike"] = minmax_scale(options_df["strike"])
+# options_df["Option_Average_Price"] = minmax_scale(options_df["Option_Average_Price"])
 
 
 # Hyperparameters
@@ -57,7 +63,7 @@ N_TIMESTEPS = 20
 
 # Create array with the prices of the underlying, where the first N_TIMESTEPS 
     # entries are nan
-padded = np.insert(underlying[" Close"].values, 0, 
+padded = np.insert(underlying_df[" Close"].values, 0, 
                    np.array([np.nan] * N_TIMESTEPS))
 
 # Create Dataframe (df) where the first column is a date and the rest are 
@@ -67,7 +73,7 @@ padded = np.insert(underlying[" Close"].values, 0,
     # the next date.
 rolled = np.column_stack([np.roll(padded, i) for i in range(N_TIMESTEPS)])
 rolled = rolled[~np.isnan(rolled).any(axis=1)]
-rolled = np.column_stack((underlying.Date.values[N_TIMESTEPS - 1:], rolled))
+rolled = np.column_stack((underlying_df.Date.values[N_TIMESTEPS - 1:], rolled))
 price_history = pd.DataFrame(data=rolled)
 
 cols = price_history.columns.drop(0)
@@ -86,7 +92,7 @@ put_df = joined[joined.OptionType == 'p'].drop(['OptionType'], axis=1)
 put_df = put_df.drop(columns=['QuoteDate'])
 
 
-# Split dfs into random train and test arrays, for inputs (X) and output (y)
+# Split DFs into random train and test arrays, for inputs (X) and output (y)
 call_X_train, call_X_test, call_y_train, call_y_test = (train_test_split(
     call_df.drop(["Option_Average_Price"], axis=1).values, 
     call_df.Option_Average_Price.values, test_size=0.01))
@@ -94,9 +100,9 @@ put_X_train, put_X_test, put_y_train, put_y_test = (train_test_split(
     put_df.drop(["Option_Average_Price"], axis=1).values, 
     put_df.Option_Average_Price.values, test_size=0.01))
 
-# Create lists composed of a 3-dimensional array containing the N_TIMESTEPS 
-    # prices of the underlying per row and an array with n_feature input values
-    # per row.
+"""Create lists composed of 2 items: a 3-dimensional array containing 
+N_TIMESTEPS columns of prices of the underlying per row and an array with 
+n_feature columns with their respective values per row."""
 call_X_train = [call_X_train[:, -N_TIMESTEPS:].reshape(call_X_train.shape[0], 
                                 N_TIMESTEPS, 1), call_X_train[:, :n_features]]
     # call_X_train[:, -N_TIMESTEPS:] returns an array with the last N_TIMESTEPS
@@ -116,8 +122,8 @@ put_X_test = [put_X_test[:, -N_TIMESTEPS:].reshape(put_X_test.shape[0],
 # Create model using Keras' functional API
 def make_model():
 
-    # Create input layer. The inputs are the closing prices of the underlying for 
-        # the past 20 days
+    """Create input layer. The inputs are the closing prices of the underlying 
+    for the past 20 days"""
     close_history = keras.Input(shape = (N_TIMESTEPS, 1))
 
     # Create LSTM layers
@@ -198,7 +204,7 @@ def make_model():
 #     connect = Concatenate()([input1, input2]) 
     
 #     # Create the hidden layers of MLP1
-#     for _ in range(layers - 1):
+#     for _ in range(n_hidden_layers - 1):
 #         connect = Dense(100)(connect)
 #         connect = BatchNormalization()(connect)
 #         connect = LeakyReLU()(connect)
@@ -207,6 +213,7 @@ def make_model():
 #     predict = Dense(1, activation='relu')(connect)
 
 #     return Model(inputs=[close_history, input2], outputs=predict)
+
 
 call_model = make_model()
 # call_model.summary()
@@ -244,19 +251,20 @@ losses, with different learning rates, batch sizes and number of epochs."""
 # np.savetxt("Saved_models/lstm_call_2_validation_losses.txt", 
 #             numpy_validation_loss, delimiter=",")
 
-call_model.compile(optimizer = keras.optimizers.Adam(lr = 1e-4), loss = 'mse')
-history = call_model.fit(call_X_train, call_y_train, batch_size = n_batch, 
-                          epochs = n_epochs_calls, validation_split = 0.01, 
-                          verbose = 1)
-call_model.save('Saved_models/lstm_call_3')
-train_loss = history.history["loss"]
-validation_loss = history.history["val_loss"]
-numpy__train_loss = np.array(train_loss)
-numpy_validation_loss = np.array(validation_loss)
-np.savetxt("Saved_models/lstm_call_3_train_losses.txt", 
-            numpy__train_loss, delimiter=",")
-np.savetxt("Saved_models/lstm_call_3_validation_losses.txt", 
-            numpy_validation_loss, delimiter=",")
+###
+# call_model.compile(optimizer = keras.optimizers.Adam(lr = 1e-4), loss = 'mse')
+# history = call_model.fit(call_X_train, call_y_train, batch_size = n_batch, 
+#                           epochs = n_epochs_calls, validation_split = 0.01, 
+#                           verbose = 1)
+# call_model.save('Saved_models/lstm_call_3')
+# train_loss = history.history["loss"]
+# validation_loss = history.history["val_loss"]
+# numpy__train_loss = np.array(train_loss)
+# numpy_validation_loss = np.array(validation_loss)
+# np.savetxt("Saved_models/lstm_call_3_train_losses.txt", 
+#             numpy__train_loss, delimiter=",")
+# np.savetxt("Saved_models/lstm_call_3_validation_losses.txt", 
+#             numpy_validation_loss, delimiter=",")
 
 # call_model.compile(optimizer = keras.optimizers.Adam(lr = 1e-5), loss = 'mse')
 # history = call_model.fit(call_X_train, call_y_train, batch_size = n_batch, 
@@ -314,32 +322,33 @@ np.savetxt("Saved_models/lstm_call_3_validation_losses.txt",
 # np.savetxt("Saved_models/lstm_put_3_validation_losses.txt", 
 #             numpy_validation_loss, delimiter=",")
 
-put_model.compile(optimizer = keras.optimizers.Adam(lr = 1e-5), loss = 'mse')
-history = put_model.fit(put_X_train, put_y_train, batch_size = n_batch, 
-                        epochs = n_epochs_puts, validation_split = 0.01,
-                        verbose = 1)
-put_model.save('Saved_models/lstm_put_4')
-train_loss = history.history["loss"]
-validation_loss = history.history["val_loss"]
-numpy__train_loss = np.array(train_loss)
-numpy_validation_loss = np.array(validation_loss)
-np.savetxt("Saved_models/lstm_put_4_train_losses.txt", 
-            numpy__train_loss, delimiter=",")
-np.savetxt("Saved_models/lstm_put_4_validation_losses.txt", 
-            numpy_validation_loss, delimiter=",")
-
-# # QUICK TEST
-# call_model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr=1e-6))
-# history = call_model.fit(call_X_train, call_y_train, 
-#             batch_size = 4096, epochs = 1, validation_split = 0.01,
-#             verbose = 1)
-# call_model.save('Saved_models/lstm_call_test')
+###
+# put_model.compile(optimizer = keras.optimizers.Adam(lr = 1e-5), loss = 'mse')
+# history = put_model.fit(put_X_train, put_y_train, batch_size = n_batch, 
+#                         epochs = n_epochs_puts, validation_split = 0.01,
+#                         verbose = 1)
+# put_model.save('Saved_models/lstm_put_4')
 # train_loss = history.history["loss"]
 # validation_loss = history.history["val_loss"]
 # numpy__train_loss = np.array(train_loss)
 # numpy_validation_loss = np.array(validation_loss)
-# np.savetxt("Saved_models/lstm_call_test_train_losses.txt", 
+# np.savetxt("Saved_models/lstm_put_4_train_losses.txt", 
 #             numpy__train_loss, delimiter=",")
-# np.savetxt("Saved_models/lstm_call_test_validation_losses.txt", 
+# np.savetxt("Saved_models/lstm_put_4_validation_losses.txt", 
 #             numpy_validation_loss, delimiter=",")
+
+# # QUICK TEST
+call_model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr=1e-3))
+history = call_model.fit(call_X_train, call_y_train, 
+            batch_size = 4096, epochs = 1, validation_split = 0.01,
+            verbose = 1)
+call_model.save('Saved_models/lstm_call_test')
+train_loss = history.history["loss"]
+validation_loss = history.history["val_loss"]
+numpy__train_loss = np.array(train_loss)
+numpy_validation_loss = np.array(validation_loss)
+np.savetxt("Saved_models/lstm_call_test_train_losses.txt", 
+            numpy__train_loss, delimiter=",")
+np.savetxt("Saved_models/lstm_call_test_validation_losses.txt", 
+            numpy_validation_loss, delimiter=",")
 

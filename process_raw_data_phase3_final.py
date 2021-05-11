@@ -19,6 +19,9 @@ import pandas as pd
 from tqdm import tqdm
 
 
+print("2 lengthy commands will follow, with respective progress bars:")
+
+
 # Load data
 underlying = pd.read_csv("Processed data/underlying.csv")
 options = pd.read_csv("Processed data/options_phase2.csv")
@@ -39,7 +42,7 @@ for index, row in tqdm(options.iterrows(), total = n_options):
     (sigma_20_annualized.append(float(underlying["Sigma_20_Days_Annualized"].
                                     loc[underlying["Date"] == row.QuoteDate])))
     
-"""Add sigma_20_annualized as a column in the options df"""
+"""Add sigma_20_annualized as a column in the options DF"""
 options["Sigma_20_Days_Annualized"] = sigma_20_annualized
 
 """Create list with the closing prices (of the underlying) that match each 
@@ -56,5 +59,5 @@ options = options.drop(["expiration", "underlying_bid_eod",
                         "underlying_ask_eod"], axis = 1)
 
 # Create csv file from the options df
-options.to_csv('Processed data/options__phase3_final.csv', index = False)
+options.to_csv('Processed data/options_phase3_final.csv', index = False)
 

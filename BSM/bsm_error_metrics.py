@@ -62,16 +62,25 @@ line2 = error_metrics(put.Option_Average_Price, put.BSM_Prediction)
 
 metric_names = ["MSE", "Bias", "AAPE", "MAPE", "PE5", "PE10", "PE20"]
 
-metric_dictionary1 = {metric_names[i]: line1[i] for i in range(len(metric_names))}
-metric_dictionary2 = {metric_names[i]: line2[i] for i in range(len(metric_names))}
+call_metric_dictionary = {metric_names[i]: line1[i] for i in range(len(metric_names))}
+put_metric_dictionary = {metric_names[i]: line2[i] for i in range(len(metric_names))}
 
 print("Error metrics for call options, regarding the average price between ask"
       " and bid, and the BSM model's prediction")
-for key, value in metric_dictionary1.items():
+for key, value in call_metric_dictionary.items():
 	    print(f"{key}:", value)
 
 print("\nError metrics for put options, regarding the average price between "
       "ask and bid, and the BSM model's prediction")
-for key, value in metric_dictionary2.items():
+for key, value in put_metric_dictionary.items():
  	    print(f"{key}:", value)
+
+"""Save metrics into files"""
+with open("bsm_call_metrics.txt", "w") as f:
+    for key, value in call_metric_dictionary.items():
+        f.write('%s:%s\n' % (key, value))
+        
+with open("bsm_put_metrics.txt", "w") as f:
+    for key, value in put_metric_dictionary.items():
+        f.write('%s:%s\n' % (key, value))
 

@@ -178,13 +178,13 @@ print("\nError metrics for put options, regarding the LSTM network's test "
 for key, value in put_metric_dictionary.items():
  	    print(f"{key}:", value)
 
-# Save metrics into files
+"""Save metrics into files"""
 with open("lstm_call_metrics.txt", "w") as f:
     for key, value in call_metric_dictionary.items():
         f.write('%s:%s\n' % (key, value))
         
 with open("lstm_put_metrics.txt", "w") as f:
-    for key, value in call_metric_dictionary.items():
+    for key, value in put_metric_dictionary.items():
         f.write('%s:%s\n' % (key, value))
     
     
