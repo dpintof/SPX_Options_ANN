@@ -26,6 +26,7 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from sklearn.model_selection import train_test_split
 from os import path
+from sklearn.preprocessing import minmax_scale
 
 
 # Hyperparameters
@@ -35,20 +36,27 @@ n_batch = 1024 # Number of observations used per gradient update.
 n_epochs = 40
 
 
-# Create DataFrame (df) for calls
+# Create DataFrame (DF) for calls
 basepath = path.dirname(__file__)
 filepath = path.abspath(path.join(basepath, "..", 
-                                  "Processed data/options_final.csv"))
+                                  "Processed data/options_phase3_final.csv"))
 df = pd.read_csv(filepath)
 # df = df.dropna(axis=0)
 df = df.drop(columns=['bid_eod', 'ask_eod', "QuoteDate"])
 # df.strike_price = df.strike_price / 1000
-call_df = df[df.OptionType == 'c'].drop(['OptionType'], axis=1)
+calls_df = df[df.OptionType == 'c'].drop(['OptionType'], axis=1)
 
+# """Rescaling of the data"""
+# calls_df["strike"] = minmax_scale(calls_df["strike"])
+# calls_df["Option_Average_Price"] = minmax_scale(calls_df["Option_Average_Price"])
+# calls_df["Underlying_Price"] = minmax_scale(calls_df["Underlying_Price"])
 
-# Split call_df into random train and test subsets, for inputs (X) and output (y)
-call_X_train, call_X_test, call_y_train, call_y_test = train_test_split(call_df.drop(["Option_Average_Price"],
-                    axis = 1), call_df.Option_Average_Price, test_size = 0.01)
+"""Split call_df into random train and test subsets, for inputs (X) and 
+output (y)"""
+call_X_train, call_X_test, call_y_train, call_y_test = (train_test_split(
+    calls_df.drop(["Option_Average_Price"], axis = 1), 
+    calls_df.Option_Average_Price, test_size = 0.01)
+    )
 
 
 # Create model using Keras' functional API
@@ -86,7 +94,7 @@ for _ in range(n_hidden_layers):
 outputs = layers.Dense(1, activation='relu')(x)
 
 # Actually create the model
-model = keras.Model(inputs=inputs, outputs=outputs)
+model = keras.Model(inputs = inputs, outputs = outputs)
 
 
 # # Create a Sequential model that is a linear stack of layers
@@ -124,89 +132,90 @@ model = keras.Model(inputs=inputs, outputs=outputs)
 # model.add(Dense(1, activation='relu'))
 
 
-"""Configure the learning process, train the model, save model and it's 
-losses, with different learning rates, batch sizes and number of epochs."""
+# """Configure the learning process, train the model, save model and it's 
+# losses, with different learning rates, batch sizes and number of epochs."""
     
-# Configure the learning process of the model with a loss function and an 
-    # optimizer. The optimizer changes the weights in order to minimize the 
-    # loss function. In this case the Adam optimizer will use the default 
-    # learning rate (LR) of 1e-3.
-model.compile(loss = 'mse', optimizer = keras.optimizers.Adam())
-# model.summary()
+# # Configure the learning process of the model with a loss function and an 
+#     # optimizer. The optimizer changes the weights in order to minimize the 
+#     # loss function. In this case the Adam optimizer will use the default 
+#     # learning rate (LR) of 1e-3.
+# model.compile(loss = 'mse', optimizer = keras.optimizers.Adam())
+# # model.summary()
 
-# Train the model with batch_size = n_batch. See fit() method's arguments: 
-    # https://faroit.com/keras-docs/2.0.2/models/sequential/
-history = model.fit(call_X_train, call_y_train, batch_size = n_batch, 
-                    epochs = n_epochs, validation_split = 0.01, verbose = 1)
+# # Train the model with batch_size = n_batch. See fit() method's arguments: 
+#     # https://faroit.com/keras-docs/2.0.2/models/sequential/
+# history = model.fit(call_X_train, call_y_train, batch_size = n_batch, 
+#                     epochs = n_epochs, validation_split = 0.01, verbose = 1)
 
-# Save the model's architecture, weights and optimizer's state
-model.save('Saved_models/mlp1_call_1')
+# # Save the model's architecture, weights and optimizer's state
+# model.save('Saved_models/mlp1_call_1')
 
-# Save the model's train and validation losses for each epoch.
-train_loss = history.history["loss"]
-validation_loss = history.history["val_loss"]
-numpy__train_loss = np.array(train_loss)
-numpy_validation_loss = np.array(validation_loss)
-np.savetxt("Saved_models/mlp1_call_1_train_losses.txt", 
-            numpy__train_loss, delimiter=",")
-np.savetxt("Saved_models/mlp1_call_1_validation_losses.txt", 
-            numpy_validation_loss, delimiter=",")
-
-# LR = 1e-4, batch size = 4096, epochs = n_epochs
-model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr=1e-4))
-history = model.fit(call_X_train, call_y_train, batch_size=4096, 
-                    epochs=n_epochs, validation_split = 0.01, verbose=1)
-model.save('Saved_models/mlp1_call_2')
-train_loss = history.history["loss"]
-validation_loss = history.history["val_loss"]
-numpy__train_loss = np.array(train_loss)
-numpy_validation_loss = np.array(validation_loss)
-np.savetxt("Saved_models/mlp1_call_2_train_losses.txt", 
-            numpy__train_loss, delimiter=",")
-np.savetxt("Saved_models/mlp1_call_2_validation_losses.txt", 
-            numpy_validation_loss, delimiter=",")
-
-# LR = 1e-5, batch size = 4096, epochs = 10
-model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr=1e-5))
-history = model.fit(call_X_train, call_y_train, 
-                    batch_size=4096, epochs=10, validation_split = 0.01, verbose=1)
-model.save('Saved_models/mlp1_call_3')
-train_loss = history.history["loss"]
-validation_loss = history.history["val_loss"]
-numpy__train_loss = np.array(train_loss)
-numpy_validation_loss = np.array(validation_loss)
-np.savetxt("Saved_models/mlp1_call_3_train_losses.txt", 
-            numpy__train_loss, delimiter=",")
-np.savetxt("Saved_models/mlp1_call_3_validation_losses.txt", 
-            numpy_validation_loss, delimiter=",")
-
-# LR = 1e-6, batch size = 4096, epochs = 10
-model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr=1e-6))
-history = model.fit(call_X_train, call_y_train, 
-                    batch_size=4096, epochs=10, 
-                    validation_split = 0.01, verbose=1)
-model.save('Saved_models/mlp1_call_4')
-train_loss = history.history["loss"]
-validation_loss = history.history["val_loss"]
-numpy__train_loss = np.array(train_loss)
-numpy_validation_loss = np.array(validation_loss)
-np.savetxt("Saved_models/mlp1_call_4_train_losses.txt", 
-            numpy__train_loss, delimiter=",")
-np.savetxt("Saved_models/mlp1_call_4_validation_losses.txt", 
-            numpy_validation_loss, delimiter=",")
-
-# # QUICK TEST
-# model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr=1e-6))
-# history = model.fit(call_X_train, call_y_train, 
-#                     batch_size=4096, epochs=1, 
-#                     validation_split = 0.01, verbose=1)
-# model.save('Saved_models/mlp1_call_test')
+# # Save the model's train and validation losses for each epoch.
 # train_loss = history.history["loss"]
 # validation_loss = history.history["val_loss"]
 # numpy__train_loss = np.array(train_loss)
 # numpy_validation_loss = np.array(validation_loss)
-# np.savetxt("Saved_models/mlp1_call_test_train_losses.txt", 
+# np.savetxt("Saved_models/mlp1_call_1_train_losses.txt", 
 #             numpy__train_loss, delimiter=",")
-# np.savetxt("Saved_models/mlp1_call_test_validation_losses.txt", 
+# np.savetxt("Saved_models/mlp1_call_1_validation_losses.txt", 
 #             numpy_validation_loss, delimiter=",")
+
+# # LR = 1e-4, batch size = 4096, epochs = n_epochs
+# model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr=1e-4))
+# history = model.fit(call_X_train, call_y_train, batch_size=4096, 
+#                     epochs=n_epochs, validation_split = 0.01, verbose=1)
+# model.save('Saved_models/mlp1_call_2')
+# train_loss = history.history["loss"]
+# validation_loss = history.history["val_loss"]
+# numpy__train_loss = np.array(train_loss)
+# numpy_validation_loss = np.array(validation_loss)
+# np.savetxt("Saved_models/mlp1_call_2_train_losses.txt", 
+#             numpy__train_loss, delimiter=",")
+# np.savetxt("Saved_models/mlp1_call_2_validation_losses.txt", 
+#             numpy_validation_loss, delimiter=",")
+
+# # LR = 1e-5, batch size = 4096, epochs = 10
+# model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr=1e-5))
+# history = model.fit(call_X_train, call_y_train, 
+#                     batch_size=4096, epochs=10, validation_split = 0.01, verbose=1)
+# model.save('Saved_models/mlp1_call_3')
+# train_loss = history.history["loss"]
+# validation_loss = history.history["val_loss"]
+# numpy__train_loss = np.array(train_loss)
+# numpy_validation_loss = np.array(validation_loss)
+# np.savetxt("Saved_models/mlp1_call_3_train_losses.txt", 
+#             numpy__train_loss, delimiter=",")
+# np.savetxt("Saved_models/mlp1_call_3_validation_losses.txt", 
+#             numpy_validation_loss, delimiter=",")
+
+# # LR = 1e-6, batch size = 4096, epochs = 10
+# model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr=1e-6))
+# history = model.fit(call_X_train, call_y_train, 
+#                     batch_size=4096, epochs=10, 
+#                     validation_split = 0.01, verbose=1)
+# model.save('Saved_models/mlp1_call_4')
+# train_loss = history.history["loss"]
+# validation_loss = history.history["val_loss"]
+# numpy__train_loss = np.array(train_loss)
+# numpy_validation_loss = np.array(validation_loss)
+# np.savetxt("Saved_models/mlp1_call_4_train_losses.txt", 
+#             numpy__train_loss, delimiter=",")
+# np.savetxt("Saved_models/mlp1_call_4_validation_losses.txt", 
+#             numpy_validation_loss, delimiter=",")
+
+# QUICK TEST
+# model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr=1e-3))
+model.compile(loss='mse', optimizer = keras.optimizers.Adam())
+history = model.fit(call_X_train, call_y_train, 
+                    batch_size=4096, epochs=1, 
+                    validation_split = 0.01, verbose=1)
+model.save('Saved_models/mlp1_call_test')
+train_loss = history.history["loss"]
+validation_loss = history.history["val_loss"]
+numpy__train_loss = np.array(train_loss)
+numpy_validation_loss = np.array(validation_loss)
+np.savetxt("Saved_models/mlp1_call_test_train_losses.txt", 
+            numpy__train_loss, delimiter=",")
+np.savetxt("Saved_models/mlp1_call_test_validation_losses.txt", 
+            numpy_validation_loss, delimiter=",")
 
