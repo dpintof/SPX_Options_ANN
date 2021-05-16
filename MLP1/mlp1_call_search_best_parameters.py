@@ -19,7 +19,7 @@ from tensorflow.keras import layers
 from tensorflow import keras
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import train_test_split, GridSearchCV, RandomizedSearchCV
 from os import path
 from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
 from multiprocessing import cpu_count
@@ -94,21 +94,40 @@ def make_model(n_hidden_layers = n_hidden_layers, n_units = n_units,
     # Actually create the model
     model = keras.Model(inputs = inputs, outputs = outputs)
     # model.compile(loss = 'mse', optimizer = keras.optimizers.Adam(lr = 1e-3))
-    model.compile(loss = 'mse', optimizer = keras.optimizers.Adam())
+    # model.compile(loss = 'mse', optimizer = keras.optimizers.Adam())
+    model.compile(loss = 'mse', optimizer = keras.optimizers.Adam(), 
+                  metrics=["accuracy"])
     return model
 
 
 model = KerasClassifier(build_fn = make_model, n_epochs = n_epochs)
 
 
-param_grid = dict(n_hidden_layers = np.arange(1, 10, 1), 
-                  n_units = np.arange(100, 1000, 100), 
-                  n_batch = np.arange(1024, 10240, 1024), 
-                  n_epochs = [10, 20, 30, 40], 
-                  learning_rate = [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1]
-                  )
-grid = GridSearchCV(estimator = model, param_grid = param_grid, 
-                    n_jobs = 4, cv = 3, verbose = 2)
+# param_grid = dict(n_hidden_layers = np.arange(1, 10, 1), 
+#                   n_units = np.arange(100, 1000, 100), 
+#                   n_batch = np.arange(1024, 10240, 1024), 
+#                   n_epochs = [10, 20, 30, 40], 
+#                   learning_rate = [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1])
+# grid = GridSearchCV(estimator = model, param_grid = param_grid, cv = 3,
+                    # n_jobs = 1, verbose = 1)
+                    
+from scipy.stats import uniform as sp_randFloat
+from scipy.stats import randint as sp_randInt
+# param_dist = {"n_hidden_layers": np.random.randint(low = 1, high = 11), 
+#               "n_units": np.random.randint(low = 1, high = 1001),
+#               "n_batch": np.random.randint(low = 1024, high = 10241),
+#               "n_epochs": np.random.randint(low = 10, high = 41), 
+#               "learning_rate": np.random.uniform(low = 1e-6, high = 1e-1)}
+param_dist = {"n_hidden_layers": sp_randInt(1, 11), 
+              "n_units": sp_randInt(1, 1001),
+              "n_batch": sp_randInt(1024, 10241),
+              "n_epochs": sp_randInt(10, 41), 
+              "learning_rate": sp_randFloat(1e-6, 1e-1)}
+n_iter_search = 20
+grid = RandomizedSearchCV(estimator = model, 
+                          param_distributions = param_dist, 
+                          n_iter = n_iter_search, verbose = 1)
+
 grid_result = grid.fit(call_X_train, call_y_train)
 print(grid.best_score_)
 print(grid.best_params_)
