@@ -51,9 +51,9 @@ calls_df = df[df.OptionType == 'c'].drop(['OptionType'], axis=1)
 # calls_df["strike"] = minmax_scale(calls_df["strike"])
 # calls_df["Option_Average_Price"] = minmax_scale(calls_df["Option_Average_Price"])
 # calls_df["Underlying_Price"] = minmax_scale(calls_df["Underlying_Price"])
-calls_df["strike"] = robust_scale(calls_df["strike"])
-calls_df["Option_Average_Price"] = robust_scale(calls_df["Option_Average_Price"])
-calls_df["Underlying_Price"] = robust_scale(calls_df["Underlying_Price"])
+# calls_df["strike"] = robust_scale(calls_df["strike"])
+# calls_df["Option_Average_Price"] = robust_scale(calls_df["Option_Average_Price"])
+# calls_df["Underlying_Price"] = robust_scale(calls_df["Underlying_Price"])
 
 """Split call_df into random train and test subsets, for inputs (X) and 
 output (y)"""

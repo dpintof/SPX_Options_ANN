@@ -96,7 +96,7 @@ def make_model(n_hidden_layers = n_hidden_layers, n_units = n_units,
     # model.compile(loss = 'mse', optimizer = keras.optimizers.Adam(lr = 1e-3))
     # model.compile(loss = 'mse', optimizer = keras.optimizers.Adam())
     model.compile(loss = 'mse', optimizer = keras.optimizers.Adam(), 
-                  metrics=["accuracy"])
+                  metrics=["accuracy"]) # added metrics to see less warnings
     return model
 
 
@@ -123,10 +123,10 @@ param_dist = {"n_hidden_layers": sp_randInt(1, 11),
               "n_batch": sp_randInt(1024, 10241),
               "n_epochs": sp_randInt(10, 41), 
               "learning_rate": sp_randFloat(1e-6, 1e-1)}
-n_iter_search = 20
+n_iter_search = 30
 grid = RandomizedSearchCV(estimator = model, 
                           param_distributions = param_dist, 
-                          n_iter = n_iter_search, verbose = 1)
+                          n_iter = n_iter_search, verbose = 3)
 
 grid_result = grid.fit(call_X_train, call_y_train)
 print(grid.best_score_)
