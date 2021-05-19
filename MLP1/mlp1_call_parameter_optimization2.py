@@ -17,11 +17,11 @@ except:
 
 import pandas as pd
 from os import path
-from sklearn.model_selection import train_test_split
 from tensorflow.keras import layers
 from tensorflow import keras
 import numpy as np
 import talos
+import wrangle
 
 
 # # Hyperparameters
@@ -52,6 +52,11 @@ y = calls_df.iloc[:, 5]
 #     calls_df.drop(["Option_Average_Price"], axis = 1), 
 #     calls_df.Option_Average_Price, test_size = 0.01))
 
+"""Split call_df into random train and validation subsets, for both inputs(X) 
+and output (y)"""
+call_X_train, call_y_train, call_X_val, call_y_val = wrangle.array_split(x, y, 
+                                                                         .5)
+
 
 """Function that creates a hidden layer by taking a tensor as input and 
 applying Batch Normalization and the LeakyReLU activation."""
@@ -76,7 +81,7 @@ def hl(tensor, n_units):
     return lr
 
 # Create MLP1 model using Keras' functional API
-def make_model(call_X_train, call_y_train, params):
+def make_model(call_X_train, call_y_train, call_X_val, call_y_val, params):
     
     # Create input layer
     inputs = keras.Input(shape = (call_X_train.shape[1],))
@@ -98,19 +103,23 @@ def make_model(call_X_train, call_y_train, params):
     #               metrics=["accuracy"]) # added metrics to see less warnings
     
     # Train the model
-    out = model.fit(call_X_train, call_y_train, 
-                    batch_size = params["n_batch"], 
-                    epochs = params["n_epochs"], 
-                    validation_split = 0.01, verbose = 1)
+    out = model.fit(call_X_train, call_y_train, validation_data = [call_X_val, 
+                                call_y_val], batch_size = params["n_batch"], 
+                                epochs = params["n_epochs"])
     return out, model
 
 
-parameter_grid = dict(n_hidden_layers = np.arange(1, 11, 1).tolist(), 
+parameter_dict = dict(n_hidden_layers = np.arange(1, 11, 1).tolist(), 
                       n_units = np.arange(100, 1001, 100).tolist(), 
                       n_batch = np.arange(1024, 10241, 1024).tolist(), 
                       n_epochs = [10, 20, 30, 41], 
                       learning_rate = [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1])
 
-t = talos.Scan(x = x, y = y, params = parameter_grid, 
-               model = make_model, experiment_name = 'MLP1_calls')
+t = talos.Scan(x = [call_X_train, call_X_train], y = call_y_train, 
+                params = parameter_dict, model = make_model, 
+                experiment_name = 'MLP1_calls', 
+                x_val = [call_X_val, call_X_val], y_val = call_y_val)
+# t = talos.Scan(x = call_X_train, y = call_y_train, params = parameter_dict, 
+#                model = make_model, experiment_name = 'MLP1_calls', 
+#                x_val = call_X_val, y_val = call_y_val)
 
