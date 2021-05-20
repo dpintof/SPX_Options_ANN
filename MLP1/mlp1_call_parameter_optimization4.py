@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu May 13 08:38:26 2021
+Created on Thu May 20 07:48:42 2021
 
 @author: Diogo
 """
@@ -19,7 +19,7 @@ from tensorflow.keras import layers
 from tensorflow import keras
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split, GridSearchCV, RandomizedSearchCV
+from sklearn.model_selection import train_test_split, GridSearchCV
 from os import path
 from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
 from multiprocessing import cpu_count
@@ -28,7 +28,7 @@ from multiprocessing import cpu_count
 # print(f"The CPUs has {cpu_count()} cores.")
 
 
-# Hyper-parameters
+# Hyperparameters
 n_hidden_layers = 3
 n_units = 400 # Number of neurons of the hidden layers.
 n_batch = 1024 # Number of observations used per gradient update.
@@ -45,13 +45,11 @@ df = df.drop(columns=['bid_eod', 'ask_eod', "QuoteDate"])
 # df.strike_price = df.strike_price / 1000
 calls_df = df[df.OptionType == 'c'].drop(['OptionType'], axis=1)
 
-
 """Split call_df into random train and test subsets, for inputs (X) and 
 output (y)"""
 call_X_train, call_X_test, call_y_train, call_y_test = (train_test_split(
     calls_df.drop(["Option_Average_Price"], axis = 1), 
-    calls_df.Option_Average_Price, test_size = 0.01)
-    )
+    calls_df.Option_Average_Price, test_size = 0.01))
 
 
 """Function that creates a hidden layer by taking a tensor as input and 
@@ -77,7 +75,7 @@ def hl(tensor):
     return lr
 
 # Create MLP1 model using Keras' functional API
-def make_model(n_hidden_layers, n_units):
+def make_model(n_hidden_layers, n_units, n_batch, n_epochs):
     
     # Create input layer
     inputs = keras.Input(shape = (call_X_train.shape[1],))
@@ -99,28 +97,20 @@ def make_model(n_hidden_layers, n_units):
     return model
 
 
-model = KerasClassifier(build_fn = make_model)
+model = KerasClassifier(build_fn = make_model, n_batch = n_batch, 
+                        n_epochs = n_epochs)
 
-           
-from scipy.stats import uniform as sp_randFloat
-from scipy.stats import randint as sp_randInt
-# param_dist = {"n_hidden_layers": np.random.randint(low = 1, high = 11), 
-#               "n_units": np.random.randint(low = 1, high = 1001),
-#               "n_batch": np.random.randint(low = 1024, high = 10241),
-#               "n_epochs": np.random.randint(low = 10, high = 41), 
-#               "learning_rate": np.random.uniform(low = 1e-6, high = 1e-1)}
-param_grid = {"n_hidden_layers": sp_randInt(1, 41), 
-              "n_units": sp_randInt(1, 1001)
-              # "n_batch": sp_randInt(1024, 10241),
-              # "n_epochs": sp_randInt(10, 41), 
-              # "learning_rate": sp_randFloat(1e-6, 1e-1)
-              }
-n_iter_search = 2
-grid = RandomizedSearchCV(estimator = model, 
-                          param_distributions = param_grid, 
-                          n_iter = n_iter_search, verbose = 3, cv = 2)
-# cv refers to k-fold cross validation, as explained in Liu et al. (2019), page 9
 
+param_grid = dict(n_hidden_layers = np.arange(1, 30, 1), 
+                  n_units = np.arange(100, 1000, 100)
+                  # n_batch = np.arange(1024, 10240, 1024), 
+                  # n_epochs = [10, 20, 30, 40], 
+                  # learning_rate = [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1])
+                  )
+
+grid = GridSearchCV(estimator = model, param_grid = param_grid, cv = 2,
+                    n_jobs = 1, verbose = 3)
+                    
 grid_result = grid.fit(call_X_train, call_y_train)
 print(grid.best_score_)
 print(grid.best_params_)

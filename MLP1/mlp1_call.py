@@ -30,7 +30,7 @@ from sklearn.preprocessing import minmax_scale
 from sklearn.preprocessing import robust_scale
 
 
-# Hyperparameters
+# Hyper-parameters
 n_hidden_layers = 3
 n_units = 400 # Number of neurons of the hidden layers.
 n_batch = 1024 # Number of observations used per gradient update.
