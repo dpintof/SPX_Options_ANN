@@ -109,17 +109,18 @@ from scipy.stats import randint as sp_randInt
 #               "n_batch": np.random.randint(low = 1024, high = 10241),
 #               "n_epochs": np.random.randint(low = 10, high = 41), 
 #               "learning_rate": np.random.uniform(low = 1e-6, high = 1e-1)}
-param_grid = {"n_hidden_layers": sp_randInt(1, 41), 
+param_grid = {"n_hidden_layers": sp_randInt(1, 101), 
               "n_units": sp_randInt(1, 1001)
               # "n_batch": sp_randInt(1024, 10241),
               # "n_epochs": sp_randInt(10, 41), 
               # "learning_rate": sp_randFloat(1e-6, 1e-1)
               }
-n_iter_search = 2
+n_iter_search = 1
 grid = RandomizedSearchCV(estimator = model, 
                           param_distributions = param_grid, 
-                          n_iter = n_iter_search, verbose = 3, cv = 2)
-# cv refers to k-fold cross validation, as explained in Liu et al. (2019), page 9
+                          n_iter = n_iter_search, verbose = 3, cv = 3)
+"""The cv parameter refers to k-fold cross validation, as explained in Liu et 
+al. (2019), page 9"""
 
 grid_result = grid.fit(call_X_train, call_y_train)
 print(grid.best_score_)

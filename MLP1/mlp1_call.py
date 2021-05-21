@@ -21,13 +21,13 @@ except:
 # from keras.optimizers import Adam
 import pandas as pd
 import numpy as np
-# import tensorflow as tf
+import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 from sklearn.model_selection import train_test_split
 from os import path
-from sklearn.preprocessing import minmax_scale
-from sklearn.preprocessing import robust_scale
+# from sklearn.preprocessing import minmax_scale
+# from sklearn.preprocessing import robust_scale
 
 
 # Hyper-parameters
@@ -71,6 +71,9 @@ x = layers.LeakyReLU()(inputs)
     # applying Batch Normalization and the LeakyReLU activation.
 def hl(tensor):
     dense = layers.Dense(n_units)
+    # initializer = tf.keras.initializers.Constant()
+    # dense = layers.Dense(n_units, kernel_initializer = initializer,
+    # bias_initializer = initializer)
     # Dense() creates a densely-connected NN layer, implementing the following 
         # operation: output = activation(dot_product(input, kernel) + bias) 
         # where activation is the element-wise activation function passed as the 
@@ -208,10 +211,9 @@ model = keras.Model(inputs = inputs, outputs = outputs)
 
 # QUICK TEST
 # model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr=1e-3))
-model.compile(loss='mse', optimizer = keras.optimizers.Adam())
-history = model.fit(call_X_train, call_y_train, 
-                    batch_size=4096, epochs=1, 
-                    validation_split = 0.01, verbose=1)
+model.compile(loss = 'mse', optimizer = keras.optimizers.Adam())
+history = model.fit(call_X_train, call_y_train, batch_size = 4096, epochs = 1, 
+                    validation_split = 0.01, verbose = 1)
 model.save('Saved_models/mlp1_call_test')
 train_loss = history.history["loss"]
 validation_loss = history.history["val_loss"]
