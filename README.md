@@ -1,4 +1,4 @@
-Instructions are outdated and will be revised at the end of the project.
+INSTRUCTIONS ARE OUTDATED AND WILL BE REVISED AT THE END OF THE PROJECT.
 
 # SPX_Options_ANN
 Public repository for the code related to my Master's thesis. My e-mail is: dpintof@disroot.org
