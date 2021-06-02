@@ -89,8 +89,8 @@ def hl(tensor):
     will be close to 0 and it's standard deviation close to 1). Theoretically 
     this can speed up the training of the neural network.
     """
-    lr = layers.LeakyReLU()(bn)
-    return lr
+    leaky = layers.LeakyReLU()(bn)
+    return leaky
 
 # Create hidden layers
 for _ in range(n_hidden_layers):
@@ -210,7 +210,19 @@ model = keras.Model(inputs = inputs, outputs = outputs)
 #             numpy_validation_loss, delimiter=",")
 
 # QUICK TEST
-# model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr=1e-3))
+# model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr = 1e-3))
+
+# initial_lr = 1e-1
+# global_step = tf.Variable(0, trainable=False)
+# decayed_lr = tf.compat.v1.train.exponential_decay(starter_lr, global_step,
+#                                                  10000, 0.95, staircase = True)
+
+# decayed_lr = tf.keras.optimizers.schedules.ExponentialDecay(initial_lr, 
+#         decay_steps = 100000, decay_rate = 0.96, staircase = True)
+
+# model.compile(loss = 'mse', optimizer = keras.optimizers.Adam(
+#                                                 learning_rate = decayed_lr))
+
 model.compile(loss = 'mse', optimizer = keras.optimizers.Adam())
 history = model.fit(call_X_train, call_y_train, batch_size = 4096, epochs = 1, 
                     validation_split = 0.01, verbose = 1)
