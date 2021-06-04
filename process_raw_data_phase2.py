@@ -32,11 +32,11 @@ options['QuoteDate'] = pd.to_datetime(options['QuoteDate'])
 treasury["Date"] = pd.to_datetime(treasury["Date"])
 
 
-"""
-Get risk-free rates that match(or are close to) each option's maturity and 
-QuoteDate
-"""
-"""Subtract the TTM of each option with the different maturities"""
+# """
+# Get risk-free rates that match(or are close to) each option's maturity and 
+# QuoteDate
+# """
+# """Subtract the TTM of each option with the different maturities"""
 # # List with the different maturities, in years, of Treasury bonds
 # treasury_maturities = [1/12, 2/12, 3/12, 6/12, 1, 2, 3, 5, 7, 10, 20, 30]
 
@@ -321,7 +321,7 @@ QuoteDate
 #                                                         == row.QuoteDate)])))
 
 """
-Get a 3-month risk-free rate that match each option's QuoteDate
+Get a 3-month (0,25 years) risk-free rate that match each option's QuoteDate
 """
 """Create list with the 3-month Treasury rates that match each option's 
 QuoteDate"""
