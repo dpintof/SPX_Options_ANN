@@ -21,7 +21,7 @@ except:
 # from keras.optimizers import Adam
 import pandas as pd
 import numpy as np
-import tensorflow as tf
+# import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 from sklearn.model_selection import train_test_split
@@ -37,7 +37,7 @@ n_batch = 1024 # Number of observations used per gradient update.
 n_epochs = 40
 
 
-# Create DataFrame (DF) for calls
+"""Create DataFrame (DF) for calls"""
 basepath = path.dirname(__file__)
 filepath = path.abspath(path.join(basepath, "..", 
                                   "Processed data/options_phase3_final.csv"))
@@ -46,6 +46,11 @@ df = pd.read_csv(filepath)
 df = df.drop(columns=['bid_eod', 'ask_eod', "QuoteDate"])
 # df.strike_price = df.strike_price / 1000
 calls_df = df[df.OptionType == 'c'].drop(['OptionType'], axis=1)
+
+"""Remove first 100k observations beccause many of the variables show a 
+weird behavior in those"""
+# calls_df = calls_df.iloc[-100000:, :]
+calls_df = calls_df.iloc[:200000, :]
 
 # """Rescaling of the data"""
 # calls_df["strike"] = minmax_scale(calls_df["strike"])
