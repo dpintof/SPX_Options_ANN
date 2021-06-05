@@ -28,6 +28,7 @@ from sklearn.model_selection import train_test_split
 from os import path
 # from sklearn.preprocessing import minmax_scale
 # from sklearn.preprocessing import robust_scale
+# from sklearn.preprocessing import StandardScaler
 
 
 # Hyper-parameters
@@ -39,26 +40,39 @@ n_epochs = 40
 
 """Create DataFrame (DF) for calls"""
 basepath = path.dirname(__file__)
+# filepath = path.abspath(path.join(basepath, "..", 
+#                                   "Processed data/options_phase3_final.csv"))
+# basepath = path.dirname(__file__)
+# filepath = path.abspath(path.join(basepath, "calls_prof.csv"))
 filepath = path.abspath(path.join(basepath, "..", 
-                                  "Processed data/options_phase3_final.csv"))
+                                  "Processed data/options_free_dataset.csv"))
 df = pd.read_csv(filepath)
 # df = df.dropna(axis=0)
 df = df.drop(columns=['bid_eod', 'ask_eod', "QuoteDate"])
 # df.strike_price = df.strike_price / 1000
 calls_df = df[df.OptionType == 'c'].drop(['OptionType'], axis=1)
 
-"""Remove first 100k observations beccause many of the variables show a 
-weird behavior in those"""
-# calls_df = calls_df.iloc[-100000:, :]
-calls_df = calls_df.iloc[:200000, :]
 
-# """Rescaling of the data"""
+# """Remove first 100k observations because many of the variables show a weird 
+# behavior in those."""
+# calls_df = calls_df.iloc[100000:, :]
+
+
+# Rescaling of the data
 # calls_df["strike"] = minmax_scale(calls_df["strike"])
 # calls_df["Option_Average_Price"] = minmax_scale(calls_df["Option_Average_Price"])
 # calls_df["Underlying_Price"] = minmax_scale(calls_df["Underlying_Price"])
 # calls_df["strike"] = robust_scale(calls_df["strike"])
 # calls_df["Option_Average_Price"] = robust_scale(calls_df["Option_Average_Price"])
 # calls_df["Underlying_Price"] = robust_scale(calls_df["Underlying_Price"])
+# calls_df = StandardScaler().fit_transform(calls_df) 
+
+# calls_df = pd.DataFrame(calls_df, columns = ['strike', 'Time_to_Maturity', 
+#     'Option_Average_Price', 'RF_Rate', 'Sigma_20_Days_Annualized', 
+#     'Underlying_Price']) 
+
+
+print(calls_df.info())
 
 """Split call_df into random train and test subsets, for inputs (X) and 
 output (y)"""
@@ -75,10 +89,12 @@ x = layers.LeakyReLU()(inputs)
 # Create function that creates a hidden layer by taking a tensor as input and 
     # applying Batch Normalization and the LeakyReLU activation.
 def hl(tensor):
-    dense = layers.Dense(n_units)
+    # initializer = tf.keras.initializers.GlorotUniform() 
     # initializer = tf.keras.initializers.Constant()
     # dense = layers.Dense(n_units, kernel_initializer = initializer,
     # bias_initializer = initializer)
+    dense = layers.Dense(n_units)
+    
     # Dense() creates a densely-connected NN layer, implementing the following 
         # operation: output = activation(dot_product(input, kernel) + bias) 
         # where activation is the element-wise activation function passed as the 

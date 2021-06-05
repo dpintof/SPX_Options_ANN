@@ -27,13 +27,14 @@ underlying = pd.read_csv("Processed data/underlying.csv")
 options = pd.read_csv("Processed data/options_phase2.csv")
 
 
-"""Remove options with Time_to_Maturity = 0"""
+# Remove options with Time_to_Maturity = 0
 options = options[options["Time_to_Maturity"] != 0]
 
-"""Remove options with Option_Average_Price = 0"""
+# Remove options with Option_Average_Price = 0
 options = options[options["Option_Average_Price"] != 0]
 
-"""Create list with the standard deviations that match each option's QuoteDate"""
+
+# Create list with the standard deviations that match each option's QuoteDate
 # Total number of options
 n_options = options.shape[0]
 
@@ -42,7 +43,8 @@ for index, row in tqdm(options.iterrows(), total = n_options):
     (sigma_20_annualized.append(float(underlying["Sigma_20_Days_Annualized"].
                                     loc[underlying["Date"] == row.QuoteDate])))
     
-"""Add sigma_20_annualized as a column in the options DF"""
+    
+# Add sigma_20_annualized as a column in the options DF
 options["Sigma_20_Days_Annualized"] = sigma_20_annualized
 
 """Create list with the closing prices (of the underlying) that match each 

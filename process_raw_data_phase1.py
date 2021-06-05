@@ -35,7 +35,9 @@ import numpy as np
 print("3 lengthy commands will follow, with respective progress bars:")
 
 
-# Underlying asset
+"""
+Underlying asset
+"""
 # Create dataframe (df) for the data of the underlying from December 2003 to 
     # April 2019
 underlying = pd.read_csv("Raw data/Underlying/SPX_December_2003-April_2019.csv")
@@ -51,17 +53,13 @@ underlying['Date'] = pd.to_datetime(underlying['Date'])
 # Sort underlying df by Date column, in ascending order
 underlying = underlying.sort_values(by='Date')
 
-"""
-Creates new column with the standard deviation of the returns from the past 20 
-days
-"""
+"""Create new column with the standard deviation of the returns from the past 20 
+days"""
 underlying['Sigma_20_Days'] = underlying[" Close"].rolling(20).apply(lambda x:
                                                 (np.diff(x) / x[:-1]).std())
-    
-"""
-Creates new column with the annualized standard deviation of the returns from 
-the past 20 days
-"""
+
+"""Creates new column with the annualized standard deviation of the returns from 
+the past 20 days"""
 underlying['Sigma_20_Days_Annualized'] = underlying['Sigma_20_Days'] * 250**0.5
 
 # Remove unnecessary columns
@@ -72,7 +70,9 @@ underlying = underlying.drop([" Open", " High", " Low", "Sigma_20_Days"],
 # underlying.to_csv('Processed data/underlying_df.csv', index=False)
 
 
-# Treasury rates
+"""
+Treasury rates
+"""
 # Create df for treasury rates from January 2004 to December 2019
 # treasury = pd.read_csv("Raw data/Treasury/Treasury_rates_2004-2019.csv")  
 treasury = pd.read_csv("Raw data/Treasury/Treasury_rates_2004-2019.csv", 
@@ -121,7 +121,9 @@ treasury.loc[pd.to_datetime("2010-10-11"),
 #     # if math.isnan(float(treasury.loc[index, 0.25])):
 #         treasury.loc[index, 0.25] = (treasury.loc[index - 1, 0.25])
 
-# Options
+"""
+Options
+"""
 # Set the path to files for options from January 2004
 p = Path("Raw data/Options/SPX_20040102_20190430")
 

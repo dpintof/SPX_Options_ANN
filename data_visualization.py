@@ -32,8 +32,10 @@ calls_df = df[df.OptionType == 'c'].drop(['OptionType'], axis=1)
 
 print(calls_df.info())
 
-calls_df.iloc[:47000, 0].plot()
+# Visualize data
+# calls_df.iloc[:47000, 0].plot()
 
 # random_integer = random.randint(1, calls_df.shape[0] - 100000)
-# calls_df.iloc[random_integer:random_integer + 100000,5].plot()
+# calls_df.iloc[round(random_integer/2):round((random_integer + 100000)/2), 
+#                                                               5].plot()
 
