@@ -21,41 +21,45 @@ except:
 # from keras.optimizers import Adam
 import pandas as pd
 import numpy as np
-# import tensorflow as tf
+import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 from sklearn.model_selection import train_test_split
 from os import path
 # from sklearn.preprocessing import minmax_scale
 # from sklearn.preprocessing import robust_scale
-# from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler
 
 
 # Hyper-parameters
-n_hidden_layers = 3
-n_units = 400 # Number of neurons of the hidden layers.
+# n_hidden_layers = 3
+n_hidden_layers = 2
+# n_units = 400 # Number of neurons of the hidden layers.
+n_units = 200 # Number of neurons of the hidden layers.
 n_batch = 1024 # Number of observations used per gradient update.
 n_epochs = 40
 
 
 """Create DataFrame (DF) for calls"""
 basepath = path.dirname(__file__)
-# filepath = path.abspath(path.join(basepath, "..", 
-#                                   "Processed data/options_phase3_final.csv"))
-# basepath = path.dirname(__file__)
-# filepath = path.abspath(path.join(basepath, "calls_prof.csv"))
 filepath = path.abspath(path.join(basepath, "..", 
-                                  "Processed data/options_free_dataset.csv"))
+                                    "Processed data/options_phase3_final.csv"))                      
+# filepath = path.abspath(path.join(basepath, "..", 
+#                                   "Processed data/options_free_dataset.csv"))
 df = pd.read_csv(filepath)
+
 # df = df.dropna(axis=0)
 df = df.drop(columns=['bid_eod', 'ask_eod', "QuoteDate"])
 # df.strike_price = df.strike_price / 1000
 calls_df = df[df.OptionType == 'c'].drop(['OptionType'], axis=1)
 
+# basepath = path.dirname(__file__)
+# filepath = path.abspath(path.join(basepath, "calls_prof.csv"))
+# calls_df = pd.read_csv(filepath)
 
-# """Remove first 100k observations because many of the variables show a weird 
-# behavior in those."""
-# calls_df = calls_df.iloc[100000:, :]
+"""Remove first 100k observations because many of the variables show a weird 
+behavior in those."""
+calls_df = calls_df.iloc[100000:, :]
 
 
 # Rescaling of the data
@@ -65,14 +69,12 @@ calls_df = df[df.OptionType == 'c'].drop(['OptionType'], axis=1)
 # calls_df["strike"] = robust_scale(calls_df["strike"])
 # calls_df["Option_Average_Price"] = robust_scale(calls_df["Option_Average_Price"])
 # calls_df["Underlying_Price"] = robust_scale(calls_df["Underlying_Price"])
-# calls_df = StandardScaler().fit_transform(calls_df) 
 
-# calls_df = pd.DataFrame(calls_df, columns = ['strike', 'Time_to_Maturity', 
-#     'Option_Average_Price', 'RF_Rate', 'Sigma_20_Days_Annualized', 
-#     'Underlying_Price']) 
+calls_df = StandardScaler().fit_transform(calls_df) 
+calls_df = pd.DataFrame(calls_df, columns = ['strike', 'Time_to_Maturity', 
+    'Option_Average_Price', 'RF_Rate', 'Sigma_20_Days_Annualized', 
+    'Underlying_Price']) 
 
-
-print(calls_df.info())
 
 """Split call_df into random train and test subsets, for inputs (X) and 
 output (y)"""
@@ -86,22 +88,23 @@ call_X_train, call_X_test, call_y_train, call_y_test = (train_test_split(
 inputs = keras.Input(shape = (call_X_train.shape[1],))
 x = layers.LeakyReLU()(inputs)
 
-# Create function that creates a hidden layer by taking a tensor as input and 
-    # applying Batch Normalization and the LeakyReLU activation.
+"""Create function that creates a hidden layer by taking a tensor as input and 
+applying Batch Normalization and the LeakyReLU activation."""
 def hl(tensor):
-    # initializer = tf.keras.initializers.GlorotUniform() 
+    initializer = tf.keras.initializers.GlorotUniform() 
     # initializer = tf.keras.initializers.Constant()
-    # dense = layers.Dense(n_units, kernel_initializer = initializer,
-    # bias_initializer = initializer)
-    dense = layers.Dense(n_units)
+    # dense = layers.Dense(n_units)
+    dense = layers.Dense(n_units, kernel_initializer = initializer,
+                                      bias_initializer = initializer)
     
-    # Dense() creates a densely-connected NN layer, implementing the following 
-        # operation: output = activation(dot_product(input, kernel) + bias) 
-        # where activation is the element-wise activation function passed as the 
-        # activation argument, kernel is a weights matrix created by the layer, 
-        # and bias is a bias vector created by the layer (only applicable if 
-        # use_bias is True, which it is by default). In this case no activation 
-        # function was passed so there is "linear" activation: a(x) = x.
+    
+    """Dense() creates a densely-connected NN layer, implementing the following 
+        operation: output = activation(dot_product(input, kernel) + bias) 
+        where activation is the element-wise activation function passed as the 
+        activation argument, kernel is a weights matrix created by the layer, 
+        and bias is a bias vector created by the layer (only applicable if 
+        use_bias is True, which it is by default). In this case no activation 
+        function was passed so there is "linear" activation: a(x) = x."""
     x = dense(tensor)
     bn = layers.BatchNormalization()(x)
     """
@@ -230,6 +233,7 @@ model = keras.Model(inputs = inputs, outputs = outputs)
 # np.savetxt("Saved_models/mlp1_call_4_validation_losses.txt", 
 #             numpy_validation_loss, delimiter=",")
 
+
 # QUICK TEST
 # model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr = 1e-3))
 
@@ -245,8 +249,10 @@ model = keras.Model(inputs = inputs, outputs = outputs)
 #                                                 learning_rate = decayed_lr))
 
 model.compile(loss = 'mse', optimizer = keras.optimizers.Adam())
-history = model.fit(call_X_train, call_y_train, batch_size = 4096, epochs = 1, 
-                    validation_split = 0.01, verbose = 1)
+# history = model.fit(call_X_train, call_y_train, batch_size = 4096, epochs = 1, 
+#                     validation_split = 0.01, verbose = 1)
+history = model.fit(call_X_train, call_y_train, batch_size = 64, epochs = 1, 
+                    validation_split = 0.1, verbose = 1)
 model.save('Saved_models/mlp1_call_test')
 train_loss = history.history["loss"]
 validation_loss = history.history["val_loss"]

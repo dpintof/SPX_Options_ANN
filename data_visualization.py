@@ -22,8 +22,10 @@ import random
 
 # Create DataFrame (DF) for calls
 basepath = path.dirname(__file__)
+# filepath = path.abspath(path.join(basepath, 
+                                  # "Processed data/options_phase3_final.csv"))
 filepath = path.abspath(path.join(basepath, 
-                                  "Processed data/options_phase3_final.csv"))
+                                  "Processed data/options_free_dataset.csv"))
 df = pd.read_csv(filepath)
 # df = df.dropna(axis=0)
 df = df.drop(columns=['bid_eod', 'ask_eod', "QuoteDate"])
@@ -33,7 +35,7 @@ calls_df = df[df.OptionType == 'c'].drop(['OptionType'], axis=1)
 print(calls_df.info())
 
 # Visualize data
-# calls_df.iloc[:47000, 0].plot()
+calls_df.iloc[:, 0].plot()
 
 # random_integer = random.randint(1, calls_df.shape[0] - 100000)
 # calls_df.iloc[round(random_integer/2):round((random_integer + 100000)/2), 
