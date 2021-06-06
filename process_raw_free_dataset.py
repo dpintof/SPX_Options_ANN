@@ -25,9 +25,6 @@ import numpy as np
 from tqdm import tqdm
 
 
-print("6 loops will follow, with respective progress bars:")
-
-
 """
 Underlying asset
 """
@@ -116,8 +113,16 @@ p = Path("Raw data/Options/SPX_20190801_20190830")
 # Create a list of the option files from August 2019
 options2_files = list(p.glob('L2_options_201908*.csv'))
 
+# Number of files for options2
+n_options2 = len(options2_files)
+
+print("7 loops will follow, with respective progress bars:")
+
 # Creates df from all files
-options2 = pd.concat([pd.read_csv(f) for f in options2_files])
+# options2 = pd.concat([pd.read_csv(f) for f in options2_files])
+options2 = pd.concat([pd.read_csv(f) for f in tqdm(options2_files, 
+                      total = n_options2)])
+
 # TEST WITH SMALL SAMPLE
 # options2 = pd.read_csv("Raw data/Options/L2_options_20190801.csv")
 
@@ -134,13 +139,17 @@ options2 = options2.drop(['UnderlyingSymbol', 'UnderlyingPrice', 'Exchange',
 options2 = options2.rename(columns = {'DataDate': 'QuoteDate', 
                                       "Type": "OptionType"})
 
+
 # Create df with all options data
 options = options1.append(options2)
-# TEST WITH SMALL SAMPLE
+
+# # TEST WITH SMALL SAMPLE
 # options = options1
-# TEST WITH SMALL SAMPLE FOR WHICH THE TIME TO MATURITY IS CLOSE TO 2 YEARS. 
-    # WE DON'T HAVE 2 YEAR TREASURY RATES FOR SOME DATES.
+
+# # """TEST WITH SMALL SAMPLE FOR WHICH THE TIME TO MATURITY IS CLOSE TO 2 YEARS. 
+# THERE ARE NO 2 YEAR TREASURY RATES FOR SOME DATES."""
 # options = options.iloc[1052:1546] 
+
 
 # Function that returns the number of years between two dates
 def years_between(d1, d2):
@@ -148,7 +157,7 @@ def years_between(d1, d2):
     d2 = datetime.strptime(d2, "%m/%d/%Y")
     return abs((d2 - d1).days / 365)
 
-# Total number of options. Useful for tqdm.
+# Total number of options
 n_options = options.shape[0]
 
 # Calculate the time to maturity (TTM), in years, for each option
@@ -231,8 +240,8 @@ options = options.rename(columns = {0:'Maturity_Closest_TTM'})
     # and Maturity_Closest_TTM
 rf_rate = []
 for index, row in tqdm(options.iterrows(), total = n_options):
-    rf_rate.append(float(treasury[row.Maturity_Closest_TTM].loc[(treasury[
-        "Date"] == row.QuoteDate)]))
+    rf_rate.append(float(treasury[row.Maturity_Closest_TTM].loc[(treasury.index
+                                                        == row.QuoteDate)]))
 
 # Add rf_rate as a column in the options df and drop unnecessary columns
 options["RF_Rate"] = rf_rate
@@ -269,8 +278,7 @@ options = options.rename(columns = {'Bid': 'bid_eod', "Ask": "ask_eod",
                                     "Strike": "strike"})
 
 # Change call into c and put into p in the OptionType column
-options['OptionType'] = np.where(options['OptionType'] == 'call', 'c', "put",
-                                 'p')
+options['OptionType'] = np.where(options['OptionType'] == 'call', 'c', 'p')
 
 # Remove options with Time_to_Maturity = 0
 options = options[options["Time_to_Maturity"] != 0]
