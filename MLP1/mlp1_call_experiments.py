@@ -1,7 +1,6 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Feb 15 12:50:11 2021
+Created on Mon Jun  7 09:41:07 2021
 
 @author: Diogo
 """
@@ -36,10 +35,10 @@ import math
 # Hyper-parameters
 n_hidden_layers = 3
 # n_hidden_layers = 1
-n_units = 400 # Number of neurons of the hidden layers.
-# n_units = 32 # Number of neurons of the hidden layers.
+# n_units = 400 # Number of neurons of the hidden layers.
+n_units = 32 # Number of neurons of the hidden layers.
 n_batch = 1024 # Number of observations used per gradient update.
-# n_batch = 128 # Number of observations used per gradient update.
+n_batch = 128 # Number of observations used per gradient update.
 n_epochs = 40
 
 
@@ -59,6 +58,7 @@ calls_df = df[df.OptionType == 'c'].drop(['OptionType'], axis=1)
 # basepath = path.dirname(__file__)
 # filepath = path.abspath(path.join(basepath, "calls_prof.csv"))
 # calls_df = pd.read_csv(filepath)
+
 
 # """Remove first 100k observations because many of the variables show a weird 
 # behavior in those."""
@@ -95,7 +95,7 @@ call_X_train, call_X_test, call_y_train, call_y_test = (train_test_split(
 #     return x_train, x_test
 
 # call_X_train, call_X_test = normalize(call_X_train, call_X_test)
-# print(np.any(np.isnan(call_X_train)))
+print("Are there any 'nan' values in the training sample?", np.any(np.isnan(call_X_train)))
 
 
 # Create model using Keras' functional API
@@ -104,21 +104,25 @@ inputs = keras.Input(shape = (call_X_train.shape[1],))
 x = layers.LeakyReLU()(inputs)
 # x = layers.LeakyReLU(0.1)(inputs)
 
-"""Create function that creates a hidden layer by taking a tensor as input and 
+
+"""Function that creates a hidden layer by taking a tensor as input and 
 applying Batch Normalization and the LeakyReLU activation."""
 def hl(tensor):
     # initializer = tf.keras.initializers.GlorotUniform() 
     # initializer = tf.keras.initializers.Constant()
     # initializer = tf.keras.initializers.he_normal()
     # initializer = tf.keras.initializers.RandomNormal(
-        # stddev = math.sqrt(4 / (32 + 32)))
-    dense_layer = layers.Dense(n_units)
+    #     stddev = math.sqrt(4 / (6 + 1)))
+    
+    r = math.sqrt(12 / (32 + 32))
+    initializer = tf.keras.initializers.RandomUniform(minval = -r, maxval = r)
+
+    # dense = layers.Dense(n_units)
+    dense = layers.Dense(n_units, kernel_initializer = initializer)
     # dense = layers.Dense(n_units, kernel_initializer = initializer, 
                 # kernel_regularizer = regularizers.l1_l2(l1=1e-5, l2 = 1e-4))
     # dense = layers.Dense(n_units, kernel_initializer = initializer,
     #                                   bias_initializer = initializer)
-    
-    
     """Dense() creates a densely-connected NN layer, implementing the following 
         operation: output = activation(dot_product(input, kernel) + bias) 
         where activation is the element-wise activation function passed as the 
@@ -126,28 +130,60 @@ def hl(tensor):
         and bias is a bias vector created by the layer (only applicable if 
         use_bias is True, which it is by default). In this case no activation 
         function was passed so there is "linear" activation: a(x) = x."""
-    x = dense_layer(tensor)
+        
+    x = dense(tensor)
     bn = layers.BatchNormalization()(x)
-    """
-    Batch normalization scales the output of a layer by subtracting the batch
-    mean and dividing by the batch standard deviation (so the output's mean 
-    will be close to 0 and it's standard deviation close to 1). Theoretically 
-    this can speed up the training of the neural network.
-    """
+    """Batch normalization scales the output of a layer by subtracting the 
+        batch mean and dividing by the batch standard deviation (so the 
+        output's mean will be close to 0 and it's standard deviation close to 
+        1). In theory this should speed up the training of the neural 
+        network."""
     leaky = layers.LeakyReLU()(bn)
     # leaky = layers.LeakyReLU(0.1)(bn)
     return leaky
+
 
 # Create hidden layers
 for _ in range(n_hidden_layers):
     x = hl(x)
 
+
+# """Create hidden layers without a loop to test suggestions in Varma and Das 
+# (2018)"""
+# # r = math.sqrt(12 / (5 + 32))
+# # initializer = tf.keras.initializers.RandomUniform(minval = -r, maxval = r)
+# initializer = tf.keras.initializers.RandomNormal(
+#                 stddev = math.sqrt(4 / (5 + 32)))
+# dense = layers.Dense(n_units, kernel_initializer = initializer)
+# x = dense(x)
+# leaky = layers.LeakyReLU()(x)
+
+
+# # r = math.sqrt(12 / (32 + 32))
+# # initializer = tf.keras.initializers.RandomUniform(minval = -r, maxval = r)
+# initializer = tf.keras.initializers.RandomNormal(
+#                 stddev = math.sqrt(4 / (32 + 32)))
+# dense = layers.Dense(n_units, kernel_initializer = initializer)
+# x = dense(leaky)
+# leaky = layers.LeakyReLU()(x)
+
+# # r = math.sqrt(12 / (32 + 1))
+# # initializer = tf.keras.initializers.RandomUniform(minval = -r, maxval = r)
+# initializer = tf.keras.initializers.RandomNormal(
+#                 stddev = math.sqrt(4 / (32 + 1)))
+# dense = layers.Dense(n_units, kernel_initializer = initializer)
+# x = dense(leaky)
+# leaky = layers.LeakyReLU()(x)
+
+
 # Create output layer
 outputs = layers.Dense(1, activation='relu')(x)
+# outputs = layers.Dense(1, activation='relu')(leaky)
 
 # Actually create the model
 model = keras.Model(inputs = inputs, outputs = outputs)
 
+print(model.summary())
 
 # # Create a Sequential model that is a linear stack of layers
 # model = Sequential()
