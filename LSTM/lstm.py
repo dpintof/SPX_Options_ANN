@@ -61,8 +61,10 @@ n_epochs_puts = 10
 N_TIMESTEPS = 20
 
 
-# Create array with the prices of the underlying, where the first N_TIMESTEPS 
-    # entries are nan
+"""
+Create array with the prices of the underlying, where the first N_TIMESTEPS 
+entries are nan
+"""
 padded = np.insert(underlying_df[" Close"].values, 0, 
                    np.array([np.nan] * N_TIMESTEPS))
 
@@ -147,9 +149,9 @@ def make_model():
     input2 = keras.Input(shape = (n_features,))
     x = layers.Concatenate()([input1, input2])
 
-    # Function that creates a hidden layer by taking a tensor as input and 
-        # applying Batch Normalization and the LeakyReLU activation. The MLP1 
-        # hidden layers.
+    """Function that creates a hidden layer by taking a tensor as input and 
+        applying Batch Normalization and the LeakyReLU activation. The MLP1 
+        hidden layers."""
     def hl(tensor):
         dense = layers.Dense(n_units)
         # Dense() creates a densely-connected NN layer, implementing the 
