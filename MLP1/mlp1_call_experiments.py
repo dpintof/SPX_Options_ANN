@@ -35,10 +35,10 @@ import math
 # Hyper-parameters
 n_hidden_layers = 3
 # n_hidden_layers = 1
-# n_units = 400 # Number of neurons of the hidden layers.
-n_units = 32 # Number of neurons of the hidden layers.
+n_units = 400 # Number of neurons of the hidden layers.
+# n_units = 32 # Number of neurons of the hidden layers.
 n_batch = 1024 # Number of observations used per gradient update.
-n_batch = 128 # Number of observations used per gradient update.
+# n_batch = 128 # Number of observations used per gradient update.
 n_epochs = 40
 
 
@@ -86,15 +86,29 @@ call_X_train, call_X_test, call_y_train, call_y_test = (train_test_split(
     calls_df.Option_Average_Price, test_size = 0.01))
 
 
-# # Normalize the inputs only
-# def normalize(x_train, x_test):
-#     train_mean = np.mean(x_train)
-#     train_std = np.mean(x_train)
-#     x_train = (x_train - train_mean)/train_std
-#     x_test = (x_test - train_mean)/train_std
-#     return x_train, x_test
+"""
+Data normalization
+"""
+def normalize(X_train, X_test):
+# def normalize(X_train, X_test, Y_train, Y_test):
+    X_train_mean = np.mean(X_train)
+    X_test_mean = np.mean(X_test)
+    # Y_train_mean = np.mean(Y_train)
+    # Y_test_mean = np.mean(Y_test)
+    X_train_std = np.std(X_train)
+    X_test_std = np.std(X_test)
+    # Y_train_std = np.std(Y_train)
+    # Y_test_std = np.std(Y_test)
+    X_train = (X_train - X_train_mean) / X_train_std
+    X_test = (X_test - X_test_mean) / X_test_std
+    # Y_train = (Y_train - Y_train_mean) / Y_train_std
+    # Y_test  = (Y_test - Y_test_mean) / Y_test_std
+    return X_train, X_test
+    # return X_train, X_test, Y_train, Y_test
 
-# call_X_train, call_X_test = normalize(call_X_train, call_X_test)
+call_X_train, call_X_test = normalize(call_X_train, call_X_test)
+# call_X_train, call_X_test, call_y_train, call_y_test = normalize(call_X_train, 
+#                                         call_X_test, call_y_train, call_y_test)
 print("Are there any 'nan' values in the training sample?", np.any(np.isnan(call_X_train)))
 
 
@@ -114,11 +128,11 @@ def hl(tensor):
     # initializer = tf.keras.initializers.RandomNormal(
     #     stddev = math.sqrt(4 / (6 + 1)))
     
-    r = math.sqrt(12 / (32 + 32))
-    initializer = tf.keras.initializers.RandomUniform(minval = -r, maxval = r)
+    # r = math.sqrt(12 / (32 + 32))
+    # initializer = tf.keras.initializers.RandomUniform(minval = -r, maxval = r)
 
-    # dense = layers.Dense(n_units)
-    dense = layers.Dense(n_units, kernel_initializer = initializer)
+    dense = layers.Dense(n_units)
+    # dense = layers.Dense(n_units, kernel_initializer = initializer)
     # dense = layers.Dense(n_units, kernel_initializer = initializer, 
                 # kernel_regularizer = regularizers.l1_l2(l1=1e-5, l2 = 1e-4))
     # dense = layers.Dense(n_units, kernel_initializer = initializer,
@@ -148,8 +162,8 @@ for _ in range(n_hidden_layers):
     x = hl(x)
 
 
-# """Create hidden layers without a loop to test suggestions in Varma and Das 
-# (2018)"""
+# """Create hidden layers without a loop to test Data Preprocessing suggestions
+# in Varma and Das (2018)"""
 # # r = math.sqrt(12 / (5 + 32))
 # # initializer = tf.keras.initializers.RandomUniform(minval = -r, maxval = r)
 # initializer = tf.keras.initializers.RandomNormal(
@@ -183,7 +197,7 @@ outputs = layers.Dense(1, activation='relu')(x)
 # Actually create the model
 model = keras.Model(inputs = inputs, outputs = outputs)
 
-print(model.summary())
+# print(model.summary())
 
 # # Create a Sequential model that is a linear stack of layers
 # model = Sequential()
