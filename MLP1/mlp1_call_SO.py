@@ -94,8 +94,8 @@ for _ in range(n_hidden_layers):
 
 
 # """
-# Create hidden layers without a loop to the initialization of parameters 
-# suggested chapter 7.5 of Varma and Das (2018)
+# Create hidden layers without a loop in order to initialize the parameters
+# according o the suggestions in chapter 7.5 of Varma and Das (2018)
 # """
 # # r = math.sqrt(12 / (5 + n_units))
 # # initializer = tf.keras.initializers.RandomUniform(minval = -r, maxval = r)
