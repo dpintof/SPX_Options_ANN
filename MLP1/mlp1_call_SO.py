@@ -26,8 +26,8 @@ from os import path
 # Hyper-parameters
 n_hidden_layers = 3
 n_units = 400 # Number of neurons of the hidden layers.
-# n_batch = 1024 # Number of observations used per gradient update.
-# n_epochs = 40
+n_batch = 4096 # Number of observations used per gradient update.
+n_epochs = 1
 
 
 """Create DataFrame (DF) for calls"""
@@ -46,7 +46,8 @@ call_X_train, call_X_test, call_y_train, call_y_test = (train_test_split(
 
 
 """
-Data normalization according to chapter 7.6 of Varma and Das (2018)
+Data normalization according to chapter 7.6 of Varma and Das (2018). I also 
+include commented code in case we want to normalize the output.
 """
 def normalize(X_train, X_test):
 # def normalize(X_train, X_test, Y_train, Y_test):
@@ -92,36 +93,6 @@ def hl(tensor):
 for _ in range(n_hidden_layers):
     x = hl(x)
 
-
-# """
-# Create hidden layers without a loop in order to initialize the parameters
-# according o the suggestions in chapter 7.5 of Varma and Das (2018)
-# """
-# # r = math.sqrt(12 / (5 + n_units))
-# # initializer = tf.keras.initializers.RandomUniform(minval = -r, maxval = r)
-# initializer = tf.keras.initializers.RandomNormal(
-#                 stddev = math.sqrt(4 / (5 + n_units)))
-# dense = layers.Dense(n_units, kernel_initializer = initializer)
-# x = dense(x)
-# leaky = layers.LeakyReLU()(x)
-
-# # r = math.sqrt(12 / (n_units + n_units))
-# # initializer = tf.keras.initializers.RandomUniform(minval = -r, maxval = r)
-# initializer = tf.keras.initializers.RandomNormal(
-#                 stddev = math.sqrt(4 / (n_units + n_units)))
-# dense = layers.Dense(n_units, kernel_initializer = initializer)
-# x = dense(leaky)
-# leaky = layers.LeakyReLU()(x)
-
-# # r = math.sqrt(12 / (n_units + 1))
-# # initializer = tf.keras.initializers.RandomUniform(minval = -r, maxval = r)
-# initializer = tf.keras.initializers.RandomNormal(
-#                 stddev = math.sqrt(4 / (n_units + 1)))
-# dense = layers.Dense(n_units, kernel_initializer = initializer)
-# x = dense(leaky)
-# leaky = layers.LeakyReLU()(x)
-
-
 # Create output layer
 outputs = layers.Dense(1, activation='relu')(x)
 
@@ -134,8 +105,8 @@ Configure the learning process, train the model, and save the model and it's
 losses
 """
 model.compile(loss = 'mse', optimizer = keras.optimizers.Adam())
-history = model.fit(call_X_train, call_y_train, batch_size = 4096, epochs = 1, 
-                    validation_split = 0.01, verbose = 1)
+history = model.fit(call_X_train, call_y_train, batch_size = n_batch, 
+                    epochs = n_epochs, validation_split = 0.01, verbose = 1)
 model.save('Saved_models/mlp1_call_test')
 train_loss = history.history["loss"]
 validation_loss = history.history["val_loss"]
