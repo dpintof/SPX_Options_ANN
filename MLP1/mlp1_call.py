@@ -86,6 +86,33 @@ call_X_train, call_X_test, call_y_train, call_y_test = (train_test_split(
     calls_df.Option_Average_Price, test_size = 0.01))
 
 
+"""
+Data normalization (subtract mean and divide by standard deviation)
+"""
+def normalize(X_train, X_test):
+# def normalize(X_train, X_test, Y_train, Y_test):
+    X_train_mean = np.mean(X_train)
+    X_test_mean = np.mean(X_test)
+    # Y_train_mean = np.mean(Y_train)
+    # Y_test_mean = np.mean(Y_test)
+    X_train_std = np.std(X_train)
+    X_test_std = np.std(X_test)
+    # Y_train_std = np.std(Y_train)
+    # Y_test_std = np.std(Y_test)
+    X_train = (X_train - X_train_mean) / X_train_std
+    X_test = (X_test - X_test_mean) / X_test_std
+    # Y_train = (Y_train - Y_train_mean) / Y_train_std
+    # Y_test  = (Y_test - Y_test_mean) / Y_test_std
+    return X_train, X_test
+    # return X_train, X_test, Y_train, Y_test
+
+call_X_train, call_X_test = normalize(call_X_train, call_X_test)
+# call_X_train, call_X_test, call_y_train, call_y_test = normalize(call_X_train, 
+#                                         call_X_test, call_y_train, call_y_test)
+print("Are there any 'nan' values in the training sample?", np.any(np.isnan(
+                                                                call_X_train)))
+
+
 # # Normalize the inputs only
 # def normalize(x_train, x_test):
 #     train_mean = np.mean(x_train)

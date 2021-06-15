@@ -109,7 +109,8 @@ def normalize(X_train, X_test):
 call_X_train, call_X_test = normalize(call_X_train, call_X_test)
 # call_X_train, call_X_test, call_y_train, call_y_test = normalize(call_X_train, 
 #                                         call_X_test, call_y_train, call_y_test)
-print("Are there any 'nan' values in the training sample?", np.any(np.isnan(call_X_train)))
+print("Are there any 'nan' values in the training sample?", np.any(np.isnan(
+                                                                call_X_train)))
 
 
 # Create model using Keras' functional API

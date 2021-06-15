@@ -138,13 +138,13 @@ model = KerasClassifier(build_fn = make_model,
 
 
 batch_size = [16,32,64]
-# epochs = [2,3]
+epochs = [2,3]
 num_neurons = [6,1,2]
 num_layers= [1,2]
 learning_rate = [0.001, 0.01, 0.1, 0.2, 0.3]
 dropout = [0.1,0.3,0.5]
 param_grid = dict(batch_size=batch_size,
-                  # epochs=epochs,
+                   epochs=epochs,
                       num_neurons=num_neurons,
                       num_layers=num_layers,
                       learning_rate=learning_rate
@@ -165,7 +165,7 @@ param_grid = dict(batch_size=batch_size,
 #               }
 
 
-n_iter_search = 1
+n_iter_search = 10
 
 grid = RandomizedSearchCV(estimator = model, 
                           param_distributions = param_grid, 

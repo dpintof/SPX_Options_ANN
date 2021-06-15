@@ -74,8 +74,9 @@ def hl(tensor):
     lr = layers.LeakyReLU()(bn)
     return lr
 
+
 # Create MLP1 model using Keras' functional API
-def make_model(n_hidden_layers, n_units, n_batch, n_epochs):
+def make_model(n_hidden_layers, n_units, n_batch, n_epochs, learning_rate):
     
     # Create input layer
     inputs = keras.Input(shape = (call_X_train.shape[1],))
@@ -90,10 +91,11 @@ def make_model(n_hidden_layers, n_units, n_batch, n_epochs):
 
     # Actually create the model
     model = keras.Model(inputs = inputs, outputs = outputs)
-    # model.compile(loss = 'mse', optimizer = keras.optimizers.Adam(lr = 1e-3))
     # model.compile(loss = 'mse', optimizer = keras.optimizers.Adam())
-    model.compile(loss = 'mse', optimizer = keras.optimizers.Adam(), 
-                  metrics=["accuracy"]) # added metrics to see less warnings
+    # model.compile(loss = 'mse', optimizer = keras.optimizers.Adam(), 
+    #               metrics=["accuracy"]) # added metrics to see less warnings
+    model.compile(loss = 'mse', optimizer = keras.optimizers.Adam(
+        lr = learning_rate), metrics = ["accuracy"])
     return model
 
 
@@ -101,12 +103,12 @@ model = KerasClassifier(build_fn = make_model, n_batch = n_batch,
                         n_epochs = n_epochs)
 
 
-param_grid = dict(n_hidden_layers = np.arange(1, 30, 1), 
-                  n_units = np.arange(100, 1000, 100)
-                  # n_batch = np.arange(1024, 10240, 1024), 
-                  # n_epochs = [10, 20, 30, 40], 
-                  # learning_rate = [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1])
-                  )
+param_grid = dict(n_hidden_layers = np.arange(1, 10, 1), 
+                  n_units = np.arange(100, 1000, 100),
+                   n_batch = np.arange(1024, 10240, 1024), 
+                   n_epochs = [10, 20, 30, 40], 
+                   learning_rate = [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1])
+                  # )
 
 grid = GridSearchCV(estimator = model, param_grid = param_grid, cv = 2,
                     n_jobs = 1, verbose = 3)
