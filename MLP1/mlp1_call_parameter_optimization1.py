@@ -137,16 +137,22 @@ model = KerasClassifier(build_fn = make_model,
                     # batch_size = np.random.randint(low = 1, high = 10241))
 
 
-batch_size = [16,32,64]
-epochs = [2,3]
-num_neurons = [6,1,2]
-num_layers= [1,2]
-learning_rate = [0.001, 0.01, 0.1, 0.2, 0.3]
-dropout = [0.1,0.3,0.5]
+# batch_size = [16,32,64]
+batch_size = np.arange(1024, 10240, 1024)
+# epochs = [2,3] 
+epochs = np.arange(5, 40, 5)
+# num_neurons = [6,1,2]
+num_neurons = np.arange(100, 1000, 100)
+# n_hidden_layers = [1,2]
+n_hidden_layers = np.arange(1, 10, 1)
+# learning_rate = [0.001, 0.01, 0.1, 0.2, 0.3]
+learning_rate = [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1] 
+
+# dropout = [0.1,0.3,0.5]
 param_grid = dict(batch_size=batch_size,
                    epochs=epochs,
                       num_neurons=num_neurons,
-                      num_layers=num_layers,
+                      num_layers=n_hidden_layers,
                       learning_rate=learning_rate
                       )
 
@@ -169,7 +175,7 @@ n_iter_search = 10
 
 grid = RandomizedSearchCV(estimator = model, 
                           param_distributions = param_grid, 
-                          n_iter = n_iter_search, verbose = 3, cv = 2)
+                          n_iter = n_iter_search, verbose = 3) # Check other verbose numbers
 """The cv parameter refers to k-fold cross validation, as explained in Liu et 
 al. (2019), page 9"""
 
