@@ -15,6 +15,11 @@ except:
     pass
 
 
+"""Prevents Tensorflow warnings about CPU instrucions"""
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+
 from tensorflow.keras import layers
 from tensorflow import keras
 import pandas as pd
@@ -43,6 +48,8 @@ n_epochs = 40
 basepath = path.dirname(__file__)
 filepath = path.abspath(path.join(basepath, "..", 
                                   "Processed data/options_phase3_final.csv"))
+# filepath = path.abspath(path.join(basepath, "..", 
+#                                   "Processed data/options_free_dataset.csv"))
 df = pd.read_csv(filepath)
 # df = df.dropna(axis=0)
 df = df.drop(columns=['bid_eod', 'ask_eod', "QuoteDate"])
@@ -85,9 +92,11 @@ def hl(tensor):
     lr = layers.LeakyReLU()(bn)
     return lr
 
+
 # Create MLP1 model using Keras' functional API
 # def make_model(n_hidden_layers, n_units, learning_rate):
-def make_model(num_layers, num_neurons, learning_rate):  
+# def make_model(num_layers, num_neurons, learning_rate):
+def make_model(num_layers, num_neurons):  
     
     # Create input layer
     inputs = keras.Input(shape = (call_X_train.shape[1],))
@@ -104,10 +113,14 @@ def make_model(num_layers, num_neurons, learning_rate):
     model = keras.Model(inputs = inputs, outputs = outputs)
     # model.compile(loss = 'mse', optimizer = keras.optimizers.Adam(lr = 1e-3))
     # model.compile(loss = 'mse', optimizer = keras.optimizers.Adam())
-    model.compile(loss = 'mse', optimizer = keras.optimizers.Adam(
-                    learning_rate = learning_rate), 
-                    metrics=["accuracy"]) # added metrics to see less warnings
+    
+    # Added accuracy metric to avoid error in .fit method later. Just ignore it.
+    model.compile(loss = 'mse', optimizer = keras.optimizers.Adam(), 
+                    metrics=["accuracy"])
+
+    
     return model
+
 
 # def make_model(num_neurons=64,num_layers=4,input_dim=20,
 #                    output_dim=2,learning_rate=1.0e-05,act='relu',
@@ -131,29 +144,32 @@ def make_model(num_layers, num_neurons, learning_rate):
 #                  )
 #     return model
 
-
-model = KerasClassifier(build_fn = make_model,
-                    epochs = 1)
-                    # batch_size = np.random.randint(low = 1, high = 10241))
-
+model = KerasClassifier(build_fn = make_model)
+# model = KerasClassifier(build_fn = make_model, epochs = n_epochs) 
+"""Need to have the epochs parameter or it returns an error. In the 
+optimization process epochs are variable anyway"""
+# model = KerasClassifier(build_fn = make_model, epochs = 1,
+#                     batch_size = np.random.randint(low = 1, high = 10241))
+# 
 
 # batch_size = [16,32,64]
-batch_size = np.arange(1024, 10240, 1024)
-# epochs = [2,3] 
-epochs = np.arange(5, 40, 5)
+batch_size = np.arange(1024, 10241, 1024).tolist()
+# epochs = [1] 
+# epochs = [2,3]
+epochs = np.arange(5, 40, 5).tolist()
 # num_neurons = [6,1,2]
-num_neurons = np.arange(100, 1000, 100)
+num_neurons = np.arange(100, 1001, 100).tolist()
 # n_hidden_layers = [1,2]
-n_hidden_layers = np.arange(1, 10, 1)
+n_hidden_layers = np.arange(1, 11, 1).tolist()
 # learning_rate = [0.001, 0.01, 0.1, 0.2, 0.3]
-learning_rate = [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1] 
+# learning_rate = [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1]
 
 # dropout = [0.1,0.3,0.5]
 param_grid = dict(batch_size=batch_size,
                    epochs=epochs,
                       num_neurons=num_neurons,
                       num_layers=n_hidden_layers,
-                      learning_rate=learning_rate
+                      # learning_rate=learning_rate
                       )
 
 # from scipy.stats import uniform as sp_randFloat
@@ -171,15 +187,17 @@ param_grid = dict(batch_size=batch_size,
 #               }
 
 
-n_iter_search = 10
+n_iter_search = 3
 
 grid = RandomizedSearchCV(estimator = model, 
                           param_distributions = param_grid, 
-                          n_iter = n_iter_search, verbose = 3) # Check other verbose numbers
+                          n_iter = n_iter_search, verbose = 2, cv = 5)
 """The cv parameter refers to k-fold cross validation, as explained in Liu et 
 al. (2019), page 9"""
 
-grid_result = grid.fit(call_X_train, call_y_train)
-print(grid.best_score_)
+optimization_result = grid.fit(call_X_train, call_y_train)
+# print(1, grid.best_score_)
+# print(grid.best_score_)
+# print(2, grid.best_params_)
 print(grid.best_params_)
-
+# print(3, grid.cv_results_)

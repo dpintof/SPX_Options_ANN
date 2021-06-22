@@ -150,6 +150,6 @@ grid = RandomizedSearchCV(estimator = model,
 """The cv parameter refers to k-fold cross validation, as explained in Liu et 
 al. (2019), page 9"""
 
-grid_result = grid.fit(call_X_train, call_y_train)
+grid_result = grid.fit(put_X_train, put_y_train)
 print(grid.best_score_)
 print(grid.best_params_)
