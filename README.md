@@ -1,4 +1,4 @@
-INSTRUCTIONS ARE OUTDATED AND WILL BE REVISED AT THE END OF THE PROJECT.
+INSTRUCTIONS ARE OUTDATED AND WILL BE REVISED AT THE END OF THE PROJECT. Files with "SO" in the name are for StackOverflow questions.
 
 # SPX_Options_ANN
 Public repository for the code related to my Master's thesis. My e-mail is: dpintof@disroot.org
