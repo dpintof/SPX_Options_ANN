@@ -34,12 +34,15 @@ import math
 
 
 # Hyper-parameters
-n_hidden_layers = 3
+n_hidden_layers = 5
+# n_hidden_layers = 3
 # n_hidden_layers = 1
-n_units = 400 # Number of neurons of the hidden layers.
-# n_units = 32 # Number of neurons of the hidden layers.
-n_batch = 1024 # Number of observations used per gradient update.
-# n_batch = 128 # Number of observations used per gradient update.
+n_units = 600 # Number of neurons of the hidden layers.
+# n_units = 400
+# n_units = 32
+n_batch = 9216 # Number of observations used per gradient update.
+# n_batch = 1024
+# n_batch = 128
 n_epochs = 40
 
 
@@ -86,31 +89,31 @@ call_X_train, call_X_test, call_y_train, call_y_test = (train_test_split(
     calls_df.Option_Average_Price, test_size = 0.01))
 
 
-"""
-Data normalization (subtract mean and divide by standard deviation)
-"""
-def normalize(X_train, X_test):
-# def normalize(X_train, X_test, Y_train, Y_test):
-    X_train_mean = np.mean(X_train)
-    X_test_mean = np.mean(X_test)
-    # Y_train_mean = np.mean(Y_train)
-    # Y_test_mean = np.mean(Y_test)
-    X_train_std = np.std(X_train)
-    X_test_std = np.std(X_test)
-    # Y_train_std = np.std(Y_train)
-    # Y_test_std = np.std(Y_test)
-    X_train = (X_train - X_train_mean) / X_train_std
-    X_test = (X_test - X_test_mean) / X_test_std
-    # Y_train = (Y_train - Y_train_mean) / Y_train_std
-    # Y_test  = (Y_test - Y_test_mean) / Y_test_std
-    return X_train, X_test
-    # return X_train, X_test, Y_train, Y_test
+# """
+# Data normalization (subtract mean and divide by standard deviation)
+# """
+# def normalize(X_train, X_test):
+# # def normalize(X_train, X_test, Y_train, Y_test):
+#     X_train_mean = np.mean(X_train)
+#     X_test_mean = np.mean(X_test)
+#     # Y_train_mean = np.mean(Y_train)
+#     # Y_test_mean = np.mean(Y_test)
+#     X_train_std = np.std(X_train)
+#     X_test_std = np.std(X_test)
+#     # Y_train_std = np.std(Y_train)
+#     # Y_test_std = np.std(Y_test)
+#     X_train = (X_train - X_train_mean) / X_train_std
+#     X_test = (X_test - X_test_mean) / X_test_std
+#     # Y_train = (Y_train - Y_train_mean) / Y_train_std
+#     # Y_test  = (Y_test - Y_test_mean) / Y_test_std
+#     return X_train, X_test
+#     # return X_train, X_test, Y_train, Y_test
 
-call_X_train, call_X_test = normalize(call_X_train, call_X_test)
-# call_X_train, call_X_test, call_y_train, call_y_test = normalize(call_X_train, 
-#                                         call_X_test, call_y_train, call_y_test)
-print("Are there any 'nan' values in the training sample?", np.any(np.isnan(
-                                                                call_X_train)))
+# call_X_train, call_X_test = normalize(call_X_train, call_X_test)
+# # call_X_train, call_X_test, call_y_train, call_y_test = normalize(call_X_train, 
+# #                                         call_X_test, call_y_train, call_y_test)
+# print("Are there any 'nan' values in the training sample?", np.any(np.isnan(
+#                                                                 call_X_train)))
 
 
 # # Normalize the inputs only
@@ -131,7 +134,7 @@ inputs = keras.Input(shape = (call_X_train.shape[1],))
 x = layers.LeakyReLU()(inputs)
 # x = layers.LeakyReLU(0.1)(inputs)
 
-"""Create function that creates a hidden layer by taking a tensor as input and 
+"""Function that creates a hidden layer by taking a tensor as input and 
 applying Batch Normalization and the LeakyReLU activation."""
 def hl(tensor):
     # initializer = tf.keras.initializers.GlorotUniform() 
@@ -213,12 +216,23 @@ model = keras.Model(inputs = inputs, outputs = outputs)
 
 # """Configure the learning process, train the model, save model and it's 
 # losses, with different learning rates, batch sizes and number of epochs."""
+"""Configure the learning process, train the model, and save the model and it's 
+losses"""
+
+"""Configure the learning process of the model with a loss function and an 
+optimizer. The optimizer changes the weights in order to minimize the loss 
+function. In this case we use the Adam optimizer"""
+model.compile(loss = 'mse', optimizer = keras.optimizers.Adam())
     
+"""Train the model, given certain hyper-parameters"""
+history = model.fit(call_X_train, call_y_train, batch_size = n_batch, 
+                    epochs = n_epochs, validation_split = 0.01, verbose = 1)
+
 # # Configure the learning process of the model with a loss function and an 
 #     # optimizer. The optimizer changes the weights in order to minimize the 
 #     # loss function. In this case the Adam optimizer will use the default 
 #     # learning rate (LR) of 1e-3.
-# model.compile(loss = 'mse', optimizer = keras.optimizers.Adam())
+# model.compile(loss = 'mse', optimizer = keras.optimizers.Adam(lr = 1e-3))
 # # model.summary()
 
 # # Train the model with batch_size = n_batch. See fit() method's arguments: 
@@ -226,18 +240,43 @@ model = keras.Model(inputs = inputs, outputs = outputs)
 # history = model.fit(call_X_train, call_y_train, batch_size = n_batch, 
 #                     epochs = n_epochs, validation_split = 0.01, verbose = 1)
 
-# # Save the model's architecture, weights and optimizer's state
-# model.save('Saved_models/mlp1_call_1')
+# Save the model's architecture, weights and optimizer's state
+model.save('Saved_models/mlp1_call_1')
 
-# # Save the model's train and validation losses for each epoch.
-# train_loss = history.history["loss"]
-# validation_loss = history.history["val_loss"]
-# numpy__train_loss = np.array(train_loss)
-# numpy_validation_loss = np.array(validation_loss)
-# np.savetxt("Saved_models/mlp1_call_1_train_losses.txt", 
-#             numpy__train_loss, delimiter=",")
-# np.savetxt("Saved_models/mlp1_call_1_validation_losses.txt", 
-#             numpy_validation_loss, delimiter=",")
+# Save the model's train and validation losses for each epoch.
+train_loss = history.history["loss"]
+validation_loss = history.history["val_loss"]
+numpy__train_loss = np.array(train_loss)
+numpy_validation_loss = np.array(validation_loss)
+np.savetxt("Saved_models/mlp1_call_1_train_losses.txt", 
+            numpy__train_loss, delimiter=",")
+np.savetxt("Saved_models/mlp1_call_1_validation_losses.txt", 
+            numpy_validation_loss, delimiter=",")
+
+
+# Another network using the hyper-parameters in Ke and Yang (2019)
+# LR changes with the number of epochs, batch size = 4096, epochs = 30
+step = tf.Variable(0, trainable=False)
+boundaries = [10, 20]
+values = [1e-3, 1e-4, 1e-5]
+learning_rate_fn = keras.optimizers.schedules.PiecewiseConstantDecay(
+    boundaries, values)
+
+learning_rate = learning_rate_fn(step)
+
+model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr = learning_rate))
+history = model.fit(call_X_train, call_y_train, batch_size=4096, 
+                    epochs = 30, validation_split = 0.01, verbose = 1)
+model.save('Saved_models/mlp1_call_2')
+train_loss = history.history["loss"]
+validation_loss = history.history["val_loss"]
+numpy__train_loss = np.array(train_loss)
+numpy_validation_loss = np.array(validation_loss)
+np.savetxt("Saved_models/mlp1_call_2_train_losses.txt", 
+            numpy__train_loss, delimiter=",")
+np.savetxt("Saved_models/mlp1_call_2_validation_losses.txt", 
+            numpy_validation_loss, delimiter=",")
+
 
 # # LR = 1e-4, batch size = 4096, epochs = n_epochs
 # model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr=1e-4))
@@ -283,32 +322,32 @@ model = keras.Model(inputs = inputs, outputs = outputs)
 #             numpy_validation_loss, delimiter=",")
 
 
-# QUICK TEST
-# model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr = 1e-3))
+# # QUICK TEST
+# # model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr = 1e-3))
 
-# initial_lr = 1e-1
-# global_step = tf.Variable(0, trainable=False)
-# decayed_lr = tf.compat.v1.train.exponential_decay(starter_lr, global_step,
-#                                                  10000, 0.95, staircase = True)
+# # initial_lr = 1e-1
+# # global_step = tf.Variable(0, trainable=False)
+# # decayed_lr = tf.compat.v1.train.exponential_decay(starter_lr, global_step,
+# #                                                  10000, 0.95, staircase = True)
 
-# decayed_lr = tf.keras.optimizers.schedules.ExponentialDecay(initial_lr, 
-#         decay_steps = 100000, decay_rate = 0.96, staircase = True)
+# # decayed_lr = tf.keras.optimizers.schedules.ExponentialDecay(initial_lr, 
+# #         decay_steps = 100000, decay_rate = 0.96, staircase = True)
 
-# model.compile(loss = 'mse', optimizer = keras.optimizers.Adam(
-#                                                 learning_rate = decayed_lr))
+# # model.compile(loss = 'mse', optimizer = keras.optimizers.Adam(
+# #                                                 learning_rate = decayed_lr))
 
-model.compile(loss = 'mse', optimizer = keras.optimizers.Adam())
-# history = model.fit(call_X_train, call_y_train, batch_size = 4096, epochs = 1, 
-                    # validation_split = 0.01, verbose = 1)
-history = model.fit(call_X_train, call_y_train, batch_size = n_batch, 
-                    epochs = 1, validation_split = 0.01, verbose = 1)
-model.save('Saved_models/mlp1_call_test')
-train_loss = history.history["loss"]
-validation_loss = history.history["val_loss"]
-numpy__train_loss = np.array(train_loss)
-numpy_validation_loss = np.array(validation_loss)
-np.savetxt("Saved_models/mlp1_call_test_train_losses.txt", 
-            numpy__train_loss, delimiter=",")
-np.savetxt("Saved_models/mlp1_call_test_validation_losses.txt", 
-            numpy_validation_loss, delimiter=",")
+# model.compile(loss = 'mse', optimizer = keras.optimizers.Adam())
+# # history = model.fit(call_X_train, call_y_train, batch_size = 4096, epochs = 1, 
+#                     # validation_split = 0.01, verbose = 1)
+# history = model.fit(call_X_train, call_y_train, batch_size = n_batch, 
+#                     epochs = 1, validation_split = 0.01, verbose = 1)
+# model.save('Saved_models/mlp1_call_test')
+# train_loss = history.history["loss"]
+# validation_loss = history.history["val_loss"]
+# numpy__train_loss = np.array(train_loss)
+# numpy_validation_loss = np.array(validation_loss)
+# np.savetxt("Saved_models/mlp1_call_test_train_losses.txt", 
+#             numpy__train_loss, delimiter=",")
+# np.savetxt("Saved_models/mlp1_call_test_validation_losses.txt", 
+#             numpy_validation_loss, delimiter=",")
 
