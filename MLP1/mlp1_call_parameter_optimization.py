@@ -23,7 +23,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 # Save the output of the script to a file
 import sys 
 stdoutOrigin=sys.stdout 
-sys.stdout = open("MLP1_calls_optimization_log.txt", "w")
+sys.stdout = open("MLP1_call_optimization_log.txt", "w")
 
 
 from tensorflow.keras import layers
@@ -43,11 +43,11 @@ from tensorflow.keras import optimizers
 # print(f"The CPUs has {cpu_count()} cores.")
 
 
-# # Hyper-parameters
-# n_hidden_layers = 3
-# n_units = 400 # Number of neurons of the hidden layers.
-# n_batch = 1024 # Number of observations used per gradient update.
-# n_epochs = 40
+# Hyper-parameters
+n_hidden_layers = 3
+n_units = 400 # Number of neurons of the hidden layers.
+n_batch = 1024 # Number of observations used per gradient update.
+n_epochs = 40
 
 
 # Create DataFrame (DF) for calls
