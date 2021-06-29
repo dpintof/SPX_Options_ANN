@@ -46,8 +46,8 @@ from tensorflow.keras import optimizers
 # Hyper-parameters
 n_hidden_layers = 3
 n_units = 400 # Number of neurons of the hidden layers.
-n_batch = 1024 # Number of observations used per gradient update.
-n_epochs = 40
+n_batch = 4096 # Number of observations used per gradient update.
+n_epochs = 30
 
 
 # Create DataFrame (DF) for calls
