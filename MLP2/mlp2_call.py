@@ -120,33 +120,33 @@ np.savetxt("Saved_models/mlp2_call_2_train_losses.txt",
 np.savetxt("Saved_models/mlp2_call_2_validation_losses.txt", 
             numpy_validation_loss, delimiter=",")
 
-model.compile(loss='mse', optimizer = keras.optimizers.Adam(1e-5))
-history = model.fit(call_X_train, call_y_train, 
-                    batch_size=n_batch, epochs=n_epochs, 
-                    validation_split = 0.01, verbose=1)
-model.save('Saved_models/mlp2_call_3')
-train_loss = history.history["loss"]
-validation_loss = history.history["val_loss"]
-numpy__train_loss = np.array(train_loss)
-numpy_validation_loss = np.array(validation_loss)
-np.savetxt("Saved_models/mlp2_call_3_train_losses.txt", 
-            numpy__train_loss, delimiter=",")
-np.savetxt("Saved_models/mlp2_call_3_validation_losses.txt", 
-            numpy_validation_loss, delimiter=",")
+# model.compile(loss='mse', optimizer = keras.optimizers.Adam(1e-5))
+# history = model.fit(call_X_train, call_y_train, 
+#                     batch_size=n_batch, epochs=n_epochs, 
+#                     validation_split = 0.01, verbose=1)
+# model.save('Saved_models/mlp2_call_3')
+# train_loss = history.history["loss"]
+# validation_loss = history.history["val_loss"]
+# numpy__train_loss = np.array(train_loss)
+# numpy_validation_loss = np.array(validation_loss)
+# np.savetxt("Saved_models/mlp2_call_3_train_losses.txt", 
+#             numpy__train_loss, delimiter=",")
+# np.savetxt("Saved_models/mlp2_call_3_validation_losses.txt", 
+#             numpy_validation_loss, delimiter=",")
 
-model.compile(loss='mse', optimizer = keras.optimizers.Adam(1e-6))
-history = model.fit(call_X_train, call_y_train, 
-                    batch_size=n_batch, epochs=10, 
-                    validation_split = 0.01, verbose=1)
-model.save('Saved_models/mlp2_call_4')
-train_loss = history.history["loss"]
-validation_loss = history.history["val_loss"]
-numpy__train_loss = np.array(train_loss)
-numpy_validation_loss = np.array(validation_loss)
-np.savetxt("Saved_models/mlp2_call_4_train_losses.txt", 
-            numpy__train_loss, delimiter=",")
-np.savetxt("Saved_models/mlp2_call_4_validation_losses.txt", 
-            numpy_validation_loss, delimiter=",")
+# model.compile(loss='mse', optimizer = keras.optimizers.Adam(1e-6))
+# history = model.fit(call_X_train, call_y_train, 
+#                     batch_size=n_batch, epochs=10, 
+#                     validation_split = 0.01, verbose=1)
+# model.save('Saved_models/mlp2_call_4')
+# train_loss = history.history["loss"]
+# validation_loss = history.history["val_loss"]
+# numpy__train_loss = np.array(train_loss)
+# numpy_validation_loss = np.array(validation_loss)
+# np.savetxt("Saved_models/mlp2_call_4_train_losses.txt", 
+#             numpy__train_loss, delimiter=",")
+# np.savetxt("Saved_models/mlp2_call_4_validation_losses.txt", 
+#             numpy_validation_loss, delimiter=",")
 
 # # SHORT TEST
 # model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr=1e-6))

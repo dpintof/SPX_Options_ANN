@@ -23,6 +23,7 @@ from sklearn.model_selection import train_test_split
 import tensorflow as tf
 # from scipy.stats import norm
 from os import path
+from contextlib import redirect_stdout
 
 
 basepath = path.dirname(__file__)
@@ -40,8 +41,8 @@ call_X_train, call_X_test, call_y_train, call_y_test = train_test_split(
     call_df.drop(["Option_Average_Price"], axis = 1), 
     call_df.Option_Average_Price, test_size = 0.01)
 put_X_train, put_X_test, put_y_train, put_y_test = train_test_split(
-    call_df.drop(["Option_Average_Price"], axis = 1), 
-    call_df.Option_Average_Price, test_size = 0.01)
+    put_df.drop(["Option_Average_Price"], axis = 1), 
+    put_df.Option_Average_Price, test_size = 0.01)
 
 
 # Load models
@@ -115,7 +116,6 @@ print("Error metrics for call options")
 for key, value in metric_dictionary1.items():
     print(f"{key}:", value)
 
-from contextlib import redirect_stdout
 with open('MLP1_call_error_metrics.txt', 'w') as f:
     with redirect_stdout(f):
         print("Error metrics for call options")
@@ -126,7 +126,6 @@ print("\nError metrics for put options")
 for key, value in metric_dictionary2.items():
  	    print(f"{key}:", value)
 
-from contextlib import redirect_stdout
 with open('MLP1_put_error_metrics.txt', 'w') as f:
     with redirect_stdout(f):
         print("Error metrics for put options")

@@ -47,7 +47,7 @@ for index, row in tqdm(options.iterrows(), total = n_options):
 # Add sigma_20_annualized as a column in the options DF
 options["Sigma_20_Days_Annualized"] = sigma_20_annualized
 
-"""Create list with the closing prices (of the underlying) that match each 
+"""Create list with the closing prices of the underlying that match each 
 option's QuoteDate"""
 underlying_price = []
 for index, row in tqdm(options.iterrows(), total = n_options):

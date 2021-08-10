@@ -147,15 +147,14 @@ def mlp1_call(n_units, n_hidden_layers):
                     # kernel_regularizer = regularizers.l1_l2(l1=1e-5, l2 = 1e-4))
         # dense = layers.Dense(n_units, kernel_initializer = initializer,
         #                                   bias_initializer = initializer)
-    
-    
-        """Dense() creates a densely-connected NN layer, implementing the following 
-            operation: output = activation(dot_product(input, kernel) + bias) 
-            where activation is the element-wise activation function passed as the 
-            activation argument, kernel is a weights matrix created by the layer, 
-            and bias is a bias vector created by the layer (only applicable if 
-            use_bias is True, which it is by default). In this case no activation 
-            function was passed so there is "linear" activation: a(x) = x."""
+        """Dense() creates a densely-connected NN layer, implementing the 
+        following operation: output = activation(dot_product(input, kernel) + 
+        bias) where activation is the element-wise activation function passed 
+        as the activation argument, kernel is a weights matrix created by the 
+        layer, and bias is a bias vector created by the layer (only applicable 
+        if use_bias is True, which it is by default). In this case no 
+        activation function was passed so there is "linear" activation: a(x) = 
+        x."""
         x = dense_layer(tensor)
         bn = layers.BatchNormalization()(x)
         """
@@ -179,6 +178,7 @@ def mlp1_call(n_units, n_hidden_layers):
     model = keras.Model(inputs = inputs, outputs = outputs)
 
     return model
+
 
 # # Create a Sequential model that is a linear stack of layers
 # model = Sequential()
@@ -256,7 +256,7 @@ losses, with different learning rates, batch sizes and number of epochs."""
 
 """Model using the hyper-parameters in Ke and Yang (2019). LR changes with the 
 number of epochs, batch size = 4096, epochs = 30"""
-step = tf.Variable(0, trainable=False)
+step = tf.Variable(0, trainable = False)
 boundaries = [10, 20]
 values = [1e-3, 1e-4, 1e-5]
 learning_rate_fn = keras.optimizers.schedules.PiecewiseConstantDecay(
