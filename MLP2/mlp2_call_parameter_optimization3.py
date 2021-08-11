@@ -88,5 +88,60 @@ def make_model(n_hidden_layers, n_neurons, learning_rate):
     return model
 
 
-model = keras.wrappers.scikit_learn.KerasClassifier(build_fn = make_model)
+def fit_with(n_hidden_layers, n_neurons, learning_rate, batch_size, n_epochs, 
+             verbose):
+
+    # Create the model using a specified hyperparameters.
+    # model = get_model(input_shape, dropout2_rate)
+    model = keras.wrappers.scikit_learn.KerasClassifier(build_fn = make_model)
+
+    # Train the model for a specified number of epochs.
+    model.compile(loss='mse', 
+                  optimizer = keras.optimizers.Adam(learning_rate=learning_rate))
+
+
+    # Train the model with the train dataset.
+    model.fit(call_X_train, call_y_train, 
+                    batch_size=batch_size, epochs=n_epochs, 
+                    validation_split = 0.01, verbose=1)
+
+    # Evaluate the model with the eval dataset.
+    score = model.evaluate(call_X_test, steps=10, verbose=0)
+    print('Test loss:', score[0])
+    print('Test accuracy:', score[1])
+
+    # Return the loss.
+    return -score[0] # Added "-" because we will maximize that amount
+
+from functools import partial
+
+verbose = 1
+input_shape = call_X_train.shape[1]
+fit_with_partial = partial(fit_with, input_shape, verbose=1)
+
+# Bayesian Optimization explained: https://github.com/fmfn/BayesianOptimization
+from bayes_opt import BayesianOptimization
+
+# Bounded region of parameter space
+pbounds = {"n_hidden_layers": (2, 6),
+           "n_neurons": (200, 900),
+           "learning_rate": (1e-5, 1),
+           "batch_size": (1024, 10240), 
+           "n_epochs": (10, 45),
+           }
+
+optimizer = BayesianOptimization(
+    f=fit_with_partial,
+    pbounds=pbounds,
+    verbose=2,  # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
+    random_state=1,
+)
+
+optimizer.maximize(init_points=10, n_iter=10,)
+
+
+for i, res in enumerate(optimizer.res):
+    print("Iteration {}: \n\t{}".format(i, res))
+
+print(optimizer.max)
 

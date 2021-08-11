@@ -1,4 +1,4 @@
-After the thesis is done I will include some instructions here.
+After the thesis is done I will include instructions.
 
 # SPX_Options_ANN
 Public repository for the code related to my Master's thesis. My e-mail is: dpintof@disroot.org
