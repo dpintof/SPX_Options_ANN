@@ -3,11 +3,12 @@
 """
 Created on Sun Feb 21 09:05:11 2021
 
-@author: Diogo
+@author: Diogo Pinto
 """
 
 """Clear the console and remove all variables present on the namespace. This is 
-useful to prevent Python from consuming more RAM each time I run the code."""
+useful to prevent Python from consuming more RAM each time I run the code.
+"""
 try:
     from IPython import get_ipython
     get_ipython().magic('clear')
@@ -26,6 +27,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import minmax_scale
 from keras.layers import Dense, Activation, LeakyReLU, BatchNormalization, LSTM, Bidirectional, Input, Concatenate
 from keras.models import Sequential, Model, load_model
+import tensorflow as tf
 
 
 """Create DFs for options and underlying"""
@@ -50,14 +52,14 @@ underlying_df = pd.read_csv(filepath)
 # Hyperparameters
 n_hidden_layers = 3
 n_features = 4 
-"""Features: Strike price, time to maturity, risk-free rate and price of the 
-underlying."""
+# Features: Strike price, time to maturity, risk-free rate and price of the 
+# underlying.
 
 n_units = 100 # Number of neurons of the hidden layers in the MLP1 network.
 n_units_lstm = 8 # Number of neurons of the LSTM layers
 n_batch = 4096
-n_epochs_calls = 10
-n_epochs_puts = 10
+n_epochs_calls = 20
+n_epochs_puts = 20
 N_TIMESTEPS = 20
 
 
@@ -130,7 +132,7 @@ def make_model():
 
     # Create LSTM layers
     lstm = layers.LSTM(units = n_units_lstm, input_shape=(N_TIMESTEPS, 1), 
-                    return_sequences=True)(close_history)
+                       return_sequences=True)(close_history)
     lstm = layers.LSTM(units = n_units_lstm, return_sequences=True)(lstm)
     lstm = layers.LSTM(units = n_units_lstm, return_sequences=True)(lstm)
     lstm = layers.LSTM(units = n_units_lstm, return_sequences=False)(lstm)
@@ -222,21 +224,34 @@ call_model = make_model()
 put_model = make_model()
 
 
-"""Configure the learning process, train the models, save models and their 
-losses, with different learning rates, batch sizes and number of epochs."""
+# Configure the learning process, train the models, save models and their 
+# losses, with different learning rates, batch sizes and number of epochs.
 
-# call_model.compile(optimizer = keras.optimizers.Adam(lr = 1e-2), loss = 'mse')
-# history = call_model.fit(call_X_train, call_y_train, batch_size = n_batch, 
-#                     epochs = n_epochs_calls, validation_split = 0.01, verbose = 1)
+# Learning rate changes with the number of epochs, as in Ke and Yang (2019)
+step = tf.Variable(0, trainable = False)
+boundaries = [10, 15]
+values = [1e-3, 1e-4, 1e-5]
+learning_rate_fn = keras.optimizers.schedules.PiecewiseConstantDecay(
+    boundaries, values)
+
+learning_rate = learning_rate_fn(step)
+
+call_model.compile(optimizer = keras.optimizers.Adam(lr = learning_rate), 
+                    loss = 'mse')
+history = call_model.fit(call_X_train, call_y_train, batch_size = n_batch, 
+                          epochs = n_epochs_calls, validation_split = 0.01,
+                          verbose = 1)
+directory = path.join("Saved_models", "lstm_call_1")
+call_model.save(directory)
 # call_model.save('Saved_models/lstm_call_1')
-# train_loss = history.history["loss"]
-# validation_loss = history.history["val_loss"]
-# numpy__train_loss = np.array(train_loss)
-# numpy_validation_loss = np.array(validation_loss)
-# np.savetxt("Saved_models/lstm_call_1_train_losses.txt", 
-#             numpy__train_loss, delimiter=",")
-# np.savetxt("Saved_models/lstm_call_1_validation_losses.txt", 
-#             numpy_validation_loss, delimiter=",")
+train_loss = history.history["loss"]
+validation_loss = history.history["val_loss"]
+numpy__train_loss = np.array(train_loss)
+numpy_validation_loss = np.array(validation_loss)
+np.savetxt("Saved_models/lstm_call_1_train_losses.txt", 
+            numpy__train_loss, delimiter=",")
+np.savetxt("Saved_models/lstm_call_1_validation_losses.txt", 
+            numpy_validation_loss, delimiter=",")
 
 
 # call_model.compile(optimizer = keras.optimizers.Adam(lr = 1e-3), loss = 'mse')
@@ -282,19 +297,31 @@ losses, with different learning rates, batch sizes and number of epochs."""
 # np.savetxt("Saved_models/lstm_call_4_validation_losses.txt", 
 #             numpy_validation_loss, delimiter=",")
 
-# put_model.compile(optimizer = keras.optimizers.Adam(lr = 1e-2), loss = 'mse')
-# history = put_model.fit(put_X_train, put_y_train, batch_size = n_batch, 
-#                         epochs = n_epochs_puts, validation_split = 0.01,
-#                         verbose = 1)
+# Learning rate changes with the number of epochs, as in Ke and Yang (2019)
+step = tf.Variable(0, trainable = False)
+boundaries = [10, 15]
+values = [1e-3, 1e-4, 1e-5]
+learning_rate_fn = keras.optimizers.schedules.PiecewiseConstantDecay(
+    boundaries, values)
+
+learning_rate = learning_rate_fn(step)
+
+put_model.compile(optimizer = keras.optimizers.Adam(lr = learning_rate), 
+                  loss = 'mse')
+history = put_model.fit(put_X_train, put_y_train, batch_size = n_batch, 
+                        epochs = n_epochs_puts, validation_split = 0.01,
+                        verbose = 1)
+directory = path.join("Saved_models", "lstm_put_1")
+put_model.save(directory)
 # put_model.save('Saved_models/lstm_put_1')
-# train_loss = history.history["loss"]
-# validation_loss = history.history["val_loss"]
-# numpy__train_loss = np.array(train_loss)
-# numpy_validation_loss = np.array(validation_loss)
-# np.savetxt("Saved_models/lstm_put_1_train_losses.txt", 
-#             numpy__train_loss, delimiter=",")
-# np.savetxt("Saved_models/lstm_put_1_validation_losses.txt", 
-#             numpy_validation_loss, delimiter=",")
+train_loss = history.history["loss"]
+validation_loss = history.history["val_loss"]
+numpy__train_loss = np.array(train_loss)
+numpy_validation_loss = np.array(validation_loss)
+np.savetxt("Saved_models/lstm_put_1_train_losses.txt", 
+            numpy__train_loss, delimiter=",")
+np.savetxt("Saved_models/lstm_put_1_validation_losses.txt", 
+            numpy_validation_loss, delimiter=",")
 
 # put_model.compile(optimizer = keras.optimizers.Adam(lr = 1e-3), loss = 'mse')
 # history = put_model.fit(put_X_train, put_y_train, batch_size = n_batch, 
@@ -340,17 +367,17 @@ losses, with different learning rates, batch sizes and number of epochs."""
 #             numpy_validation_loss, delimiter=",")
 
 # # QUICK TEST
-call_model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr=1e-3))
-history = call_model.fit(call_X_train, call_y_train, 
-            batch_size = 4096, epochs = 1, validation_split = 0.01,
-            verbose = 1)
-call_model.save('Saved_models/lstm_call_test')
-train_loss = history.history["loss"]
-validation_loss = history.history["val_loss"]
-numpy__train_loss = np.array(train_loss)
-numpy_validation_loss = np.array(validation_loss)
-np.savetxt("Saved_models/lstm_call_test_train_losses.txt", 
-            numpy__train_loss, delimiter=",")
-np.savetxt("Saved_models/lstm_call_test_validation_losses.txt", 
-            numpy_validation_loss, delimiter=",")
+# call_model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr=1e-3))
+# history = call_model.fit(call_X_train, call_y_train, 
+#             batch_size = 4096, epochs = 1, validation_split = 0.01,
+#             verbose = 1)
+# call_model.save('Saved_models/lstm_call_test')
+# train_loss = history.history["loss"]
+# validation_loss = history.history["val_loss"]
+# numpy__train_loss = np.array(train_loss)
+# numpy_validation_loss = np.array(validation_loss)
+# np.savetxt("Saved_models/lstm_call_test_train_losses.txt", 
+#             numpy__train_loss, delimiter=",")
+# np.savetxt("Saved_models/lstm_call_test_validation_losses.txt", 
+#             numpy_validation_loss, delimiter=",")
 

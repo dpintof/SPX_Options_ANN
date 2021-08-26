@@ -32,7 +32,7 @@ n_batch = 4096
 
 basepath = path.dirname(__file__)
 filepath = path.abspath(path.join(basepath, "..", 
-                                  "Processed data/options_final.csv"))
+                                  "Processed data/options_phase3_final.csv"))
 options_df = pd.read_csv(filepath)
 # options_df = dd.read_csv(filepath)
 # df = df.dropna(axis=0)
@@ -101,8 +101,8 @@ put_X_test = [put_X_test[:, -N_TIMESTEPS:].reshape(put_X_test.shape[0],
                                         N_TIMESTEPS, 1), put_X_test[:, :4]]
 
 
-call_model = tf.keras.models.load_model('Saved_models/lstm_call_3')
-put_model = tf.keras.models.load_model('Saved_models/lstm_put_4')
+call_model = tf.keras.models.load_model('Saved_models/lstm_call_1')
+put_model = tf.keras.models.load_model('Saved_models/lstm_put_1')
 
 
 # def black_scholes_call(row):
