@@ -41,7 +41,7 @@ filepath = path.abspath(path.join(basepath, "..",
 df = pd.read_csv(filepath)
 df = df.drop(columns=['bid_eod', 'ask_eod', "QuoteDate"])
 call_df = df[df.OptionType == 'c'].drop(['OptionType'], axis=1)
-call_df = call_df.iloc[-100000:,:]
+# call_df = call_df.iloc[-100000:,:]
 # call_df = call_df.dropna()
 
 # call_df.to_csv('call_df.csv', index=False)
@@ -141,7 +141,7 @@ def custom_hl(tensor, n_units):
     return y
 
 
-# hl function that works. Useful for tests.
+# Simple hidden layer generation function
 def hl(tensor, n_units):
     hl_output = layers.Dense(n_units, 
                              activation = layers.LeakyReLU(alpha=1))(tensor)
