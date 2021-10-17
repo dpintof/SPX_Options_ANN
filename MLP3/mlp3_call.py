@@ -35,56 +35,29 @@ n_epochs = 30
 
 
 # Create DataFrame (df) for calls
+# call_df = pd.DataFrame(np.random.rand(6000000, 6) * 100, 
+#                        columns=['Strike', "Time to Maturity", 
+#                                 "Option_Average_Price", "RF Rate", 
+#                                 "Sigma 20 Days Annualized", 
+#                                 "Underlying Price"])
+
 basepath = path.dirname(__file__)
 filepath = path.abspath(path.join(basepath, "..", 
                                   "Processed data/options_phase3_final.csv"))
 df = pd.read_csv(filepath)
 df = df.drop(columns=['bid_eod', 'ask_eod', "QuoteDate"])
 call_df = df[df.OptionType == 'c'].drop(['OptionType'], axis=1)
-# call_df = call_df.iloc[-100000:,:]
-# call_df = call_df.dropna()
 
-# call_df.to_csv('call_df.csv', index=False)
-# call_df = pd.read_csv("call_df.csv")
+# due to performance issues I had to limit the sample
+call_df = call_df.iloc[:50000,:] 
+
+# call_df = call_df.dropna()
 
 
 # Split call_df into random train and test subsets, for inputs (X) and output (y)
 call_X_train, call_X_test, call_y_train, call_y_test = (train_test_split(
     call_df.drop(["Option_Average_Price"], axis = 1), 
     call_df.Option_Average_Price, test_size = 0.01))
-
-
-# # SMALL SAMPLE FOR TESTS
-# x_train = {'strike':  [200, 2925], 'Time to Maturity': [0.312329, 0.0356164], 
-#         "RF Rate": [0.08, 2.97], 
-#         "Sigma 20 Days Annualized": [0.123251, 0.0837898], 
-#         "Underlying Price": [1494.82, 2840.69]
-#         }
-
-# call_X_train = pd.DataFrame (x_train, columns = ['strike', "Time to Maturity", 
-#                                                  "RF Rate", 
-#                                                  "Sigma 20 Days Annualized", 
-#                                                  "Underlying Price"]
-#                              )
-
-# x_test = {'strike':  [200], 'Time to Maturity': [0.0356164], 
-#         "RF Rate": [2.97], 
-#         "Sigma 20 Days Annualized": [0.0837898], 
-#         "Underlying Price": [2840.69]
-#         }
-
-# call_X_test = pd.DataFrame (x_test, columns = ['strike', "Time to Maturity", 
-#                                                  "RF Rate", 
-#                                                  "Sigma 20 Days Annualized", 
-#                                                  "Underlying Price"]
-#                             )
-
-# y_train = np.array([1285.25, 0.8])
-# call_y_train = pd.Series(y_train)
-
-# y_test = np.array([0.8])
-# call_y_test = pd.Series(y_test)
-
 
 # Create model using Keras' Functional API
 def mlp3_call(n_hidden_layers, n_units):
@@ -159,43 +132,16 @@ def pen(x, lamb, m):
 
 # Custom loss function that is a MSE function plus three soft constraints
 # def constrained_mse(y_true, y_pred):
-    
-# # Parameters of penalization function
-#     lamb = 100
-#     m = 4
-    
-#     # # Penalization function
-#     # # Parameters of said function
-#     # lamb = 10
-#     # m = 4
-    
-#     # # Function
-#     # def pen(x):
-#     #     return tf.where(x < 0, 0.0, lamb * x**m)
-#     # def pen(x):
-#     #     return tf.cond(x < 0, lambda: 0.0, lambda: lamb * x**m)
-    
-#     # Custom loss function
-#     loss = (keras.backend.mean(keras.backend.square(y_pred - y_true)) # MSE
-    
-#             + pen(-(model.input[:,0])**2 * tf.gradients(tf.gradients(y_pred, 
-#                     model.input), model.input)[0][:, 0], lamb, m) # constraint 1
-            
-#             + pen(-model.input[:,1] * tf.gradients(y_pred, 
-#                     model.input)[0][:, 1], lamb, m) # constraint 2
-
-#             + pen(model.input[:,0] * tf.gradients(y_pred, 
-#                     model.input)[0][:, 0], lamb, m)) # constraint 3
-            
-#     return loss
-
-
 def constrained_mse(y_true, y_pred):
     
     mse = losses.mse(y_true, y_pred)
     
-    x = tf.convert_to_tensor(call_X_train, np.float32)
+    # x = tf.convert_to_tensor(call_X_train, np.float32)
     # x = tf.constant(call_X_train, np.float32)
+    array = call_X_train.values
+    model.run_eagerly = True
+    x = tf.convert_to_tensor(array, dtype="float32")
+    # print(x)
     
     with tf.GradientTape() as tape:
         tape.watch(x)
@@ -211,46 +157,20 @@ def constrained_mse(y_true, y_pred):
     d2y_dstrike2 = grad_y2[0, 0]
     # d2y_dstrike2 = tape.gradient(dy_dstrike, x[:,0])
     
-    loss = mse + dy_dstrike + dy_dttm + d2y_dstrike2
+    
+    # Parameters for the  penalization function
+    lamb = 100
+    m = 4
+    
+    # loss = mse + pen(-dy_dstrike, lamb, m) + pen(-dy_dttm, lamb, m) 
+    # + pen(-d2y_dstrike2, lamb, m)
+    
+    tensor_list = [mse, pen(-dy_dstrike, lamb, m), pen(-dy_dttm, lamb, m), 
+                   pen(-d2y_dstrike2, lamb, m)]
+    
+    loss = tf.add_n(tensor_list)
 
     return loss
-
-
-# def constrained_mse(y_true, y_pred):
-    
-#     # Parameters of penalization function
-#     lamb = 100
-#     m = 4
-    
-#     # # Penalization function
-#     # # Parameters of said function
-#     # lamb = 10
-#     # m = 4
-    
-#     # # Function
-#     # def pen(x):
-#     #     return tf.where(x < 0, 0.0, lamb * x**m)
-#     # def pen(x):
-#     #     return tf.cond(x < 0, lambda: 0.0, lambda: lamb * x**m)
-    
-#     # Custom loss function 
-#     loss = (keras.backend.mean(keras.backend.square(y_pred - y_true)) # MSE
-    
-#             + pen(-tf.gradients(tf.gradients(y_pred, model.input[:,0]), 
-#                                 model.input[:,0]), 
-#                   lamb, m)
-#             )
-    
-#             # + pen(-(model.input[:,0])**2 * tf.gradients(tf.gradients(y_pred, 
-#             #         model.input), model.input)[0][:, 0], lamb, m)) # constraint 1
-            
-#             # + pen(-model.input[:,1] * tf.gradients(y_pred, 
-#             #         model.input)[0][:, 1], lamb, m) # constraint 2
-
-#             # + pen(model.input[:,0] * tf.gradients(y_pred, 
-#             #         model.input)[0][:, 0], lamb, m)) # constraint 3
-            
-#     return loss
 
 
 # Measure/Metric for the amount of prices that are not arbitrage-free.
@@ -272,12 +192,6 @@ def measure_arbitrage(y_true, y_pred):
 
             + pen(model.input[:,0] * tf.gradients(y_pred, 
                     model.input)[0][:, 0], lamb, m)) # constraint 3
-
-
-# # TEST LOSS FUNCTION
-# def my_loss_fn(y_true, y_pred):
-#     squared_difference = tf.square(y_true - y_pred)
-#     return tf.reduce_mean(squared_difference, axis=-1)
 
 
 # Configure the learning process of the model with a loss function and an 
