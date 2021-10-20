@@ -139,7 +139,7 @@ def constrained_mse(y_true, y_pred):
     # x = tf.convert_to_tensor(call_X_train, np.float32)
     # x = tf.constant(call_X_train, np.float32)
     array = call_X_train.values
-    model.run_eagerly = True
+    # model.run_eagerly = True
     x = tf.convert_to_tensor(array, dtype="float32")
     # print(x)
     
@@ -201,7 +201,8 @@ def measure_arbitrage(y_true, y_pred):
 model = mlp3_call(n_hidden_layers, n_units) 
 # model.compile(loss = constrained_mse, optimizer = keras.optimizers.Adam(), 
 #               metrics = [measure_arbitrage])
-model.compile(loss = constrained_mse, optimizer = keras.optimizers.Adam(),)
+model.compile(loss = constrained_mse, optimizer = keras.optimizers.Adam(), 
+              run_eagerly=True)
 # model.compile(loss = "mse", optimizer = keras.optimizers.Adam(),)
 
 # model.summary()
