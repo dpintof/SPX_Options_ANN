@@ -16,9 +16,6 @@ except:
     pass
 
 
-# from keras.models import Sequential
-# from keras.layers import Dense, LeakyReLU, BatchNormalization
-# from keras.optimizers import Adam
 import pandas as pd
 import numpy as np
 import tensorflow as tf
@@ -98,64 +95,8 @@ def mlp1_put(n_neurons, n_hidden_layers):
     return model
 
 
-# # Create a Sequential model that is a linear stack of layers
-# model = Sequential()
-
-# # Adds layers incrementally
-# model.add(Dense(n_units, input_dim = put_X_train.shape[1])) # The parameter
-#     # input_dim defines how many inputs the layer is going to have. In this
-#     # case it's 5 = put_X_train.shape[1].
-#     # The parameter units (in this case = n_units) sets the dimensionality of 
-#         # the output space.
-# model.add(LeakyReLU())
-
-# for _ in range(layers - 1):
-#     model.add(Dense(n_units)) # Dense() creates a densely-connected NN layer, 
-#         # implementing the following operation: output = activation(dot(input, 
-#         # kernel) + bias) where activation is the element-wise activation 
-#         # function passed as the activation argument, kernel is a weights 
-#         # matrix created by the layer, and bias is a bias vector created by the 
-#         # layer (only applicable if use_bias is True, which it is by default). 
-#         # In this case no activation function was passed so there is "linear" 
-#         # activation: a(x) = x.
-#     model.add(BatchNormalization()) # Batch normalization scales the output of 
-#         # a layer by subtracting the batch mean and dividing by the batch 
-#         # standard deviation (so it maintains the output's mean close to 0 and 
-#         # it's standard deviation close to 1. This can speed up the training of 
-#         # the neural network.
-#     model.add(LeakyReLU())
-
-# # Create output layer
-# model.add(Dense(1, activation='relu'))
-
-
-"""Configure the learning process, train the model, save model and it's 
-losses, with different learning rates, batch sizes and number of epochs."""
-    
-# """Configure the learning process of the model with a loss function and an 
-# optimizer. The optimizer changes the weights in order to minimize the loss 
-# function. In this case we use the Adam optimizer"""
-# model = mlp1_put(n_units, n_hidden_layers) 
-# model.compile(loss = 'mse', optimizer = keras.optimizers.Adam())
-    
-# """Train the model, given certain hyper-parameters"""
-# history = model.fit(puts_X_train, puts_y_train, batch_size = n_batch, 
-#                     epochs = n_epochs, validation_split = 0.01, verbose = 1)
-
-# # Save the model's architecture, weights and optimizer's state
-# model.save('Saved_models/mlp1_put_1')
-
-# # Save the model's train and validation losses for each epoch.
-# train_loss = history.history["loss"]
-# validation_loss = history.history["val_loss"]
-# numpy__train_loss = np.array(train_loss)
-# numpy_validation_loss = np.array(validation_loss)
-# np.savetxt("Saved_models/mlp1_put_1_train_losses.txt", 
-#             numpy__train_loss, delimiter=",")
-# np.savetxt("Saved_models/mlp1_put_1_validation_losses.txt", 
-#             numpy_validation_loss, delimiter=",")
-
-
+# CONFIGURE THE LEARNING PROCESS, TRAIN THE MODEL, SAVE MODEL AND IT'S 
+# LOSSES, WITH DIFFERENT LEARNING RATES, BATCH SIZES AND NUMBER OF EPOCHS.
 """Model using the hyper-parameters in Ke and Yang (2019). LR changes with the 
 number of epochs, batch size = 4096, epochs = 30"""
 step = tf.Variable(0, trainable = False)
@@ -181,62 +122,4 @@ np.savetxt("Saved_models/mlp1_put_2_train_losses.txt",
             numpy__train_loss, delimiter=",")
 np.savetxt("Saved_models/mlp1_put_2_validation_losses.txt", 
             numpy_validation_loss, delimiter=",")
-
-
-# # LR = 1e-4, batch size = 4096, epochs = n_epochs
-# model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr=1e-4))
-# history = model.fit(puts_X_train, puts_y_train, batch_size=4096, 
-#                     epochs=n_epochs, validation_split = 0.01, verbose=1)
-# model.save('Saved_models/mlp1_put_2')
-# train_loss = history.history["loss"]
-# validation_loss = history.history["val_loss"]
-# numpy__train_loss = np.array(train_loss)
-# numpy_validation_loss = np.array(validation_loss)
-# np.savetxt("Saved_models/mlp1_put_2_train_losses.txt", 
-#             numpy__train_loss, delimiter=",")
-# np.savetxt("Saved_models/mlp1_put_2_validation_losses.txt", 
-#             numpy_validation_loss, delimiter=",")
-
-# # LR = 1e-5, batch size = 4096, epochs = 10
-# model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr=1e-5))
-# history = model.fit(puts_X_train, puts_y_train, batch_size=4096, epochs=10, 
-#                     validation_split = 0.01, verbose=1)
-# model.save('Saved_models/mlp1_put_3')
-# train_loss = history.history["loss"]
-# validation_loss = history.history["val_loss"]
-# numpy__train_loss = np.array(train_loss)
-# numpy_validation_loss = np.array(validation_loss)
-# np.savetxt("Saved_models/mlp1_put_3_train_losses.txt", 
-#             numpy__train_loss, delimiter=",")
-# np.savetxt("Saved_models/mlp1_put_3_validation_losses.txt", 
-#             numpy_validation_loss, delimiter=",")
-
-# # LR = 1e-6, batch size = 4096, epochs = 10
-# model.compile(loss='mse', optimizer = keras.optimizers.Adam(lr=1e-6))
-# history = model.fit(puts_X_train, puts_y_train, 
-#                     batch_size=4096, epochs=10, 
-#                     validation_split = 0.01, verbose=1)
-# model.save('Saved_models/mlp1_put_4')
-# train_loss = history.history["loss"]
-# validation_loss = history.history["val_loss"]
-# numpy__train_loss = np.array(train_loss)
-# numpy_validation_loss = np.array(validation_loss)
-# np.savetxt("Saved_models/mlp1_put_4_train_losses.txt", 
-#             numpy__train_loss, delimiter=",")
-# np.savetxt("Saved_models/mlp1_put_4_validation_losses.txt", 
-#             numpy_validation_loss, delimiter=",")
-
-# # QUICK TEST
-# model.compile(loss = 'mse', optimizer = keras.optimizers.Adam())
-# history = model.fit(puts_X_train, puts_y_train, batch_size = n_batch, 
-#                     epochs = 1, validation_split = 0.01, verbose = 1)
-# model.save('Saved_models/mlp1_put_test')
-# train_loss = history.history["loss"]
-# validation_loss = history.history["val_loss"]
-# numpy__train_loss = np.array(train_loss)
-# numpy_validation_loss = np.array(validation_loss)
-# np.savetxt("Saved_models/mlp1_put_test_train_losses.txt", 
-#             numpy__train_loss, delimiter=",")
-# np.savetxt("Saved_models/mlp1_put_test_validation_losses.txt", 
-#             numpy_validation_loss, delimiter=",")
 

@@ -24,20 +24,22 @@ n_batch = 64 # Number of observations used per gradient update.
 n_epochs = 30
 
 
-# Create DataFrame (df) for calls
-basepath = path.dirname(__file__)
-filepath = path.abspath(path.join(basepath, "..", 
-                                  "Processed data/options_phase3_final.csv"))
-df = pd.read_csv(filepath)
-df = df.drop(columns=['bid_eod', 'ask_eod', "QuoteDate"])
-call_df = df[df.OptionType == 'c'].drop(['OptionType'], axis=1)
-# call_df = call_df.iloc[-10:,:]
-
+# Create DataFrame (df) with random floats
+call_df = pd.DataFrame(np.random.rand(6000000, 6) * 100, 
+                       columns=['Strike', "Time to Maturity", 
+                                "Option_Average_Price", "RF Rate", 
+                                "Sigma 20 Days Annualized", 
+                                "Underlying Price"])
+call_df = call_df.iloc[-10:,:]
 
 # Split call_df into random train and test subsets, for inputs (X) and output (y)
 call_X_train, call_X_test, call_y_train, call_y_test = (train_test_split(
     call_df.drop(["Option_Average_Price"], axis = 1), 
     call_df.Option_Average_Price, test_size = 0.01))
+
+# array = call_X_train.values
+
+# tensor = tf.convert_to_tensor(array)
 
 
 # Create model using Keras' Functional API
@@ -71,11 +73,12 @@ def constrained_mse(y_true, y_pred):
     
     mse = losses.mse(y_true, y_pred)
     
-    x = tf.convert_to_tensor(call_X_train, np.float32)
+    array = call_X_train.values
+    x = tf.convert_to_tensor(array)
     
     with tf.GradientTape() as tape:
         tape.watch(x)
-        with tf.GradientTape(persistent=True) as tape2:
+        with tf.GradientTape() as tape2:
             tape2.watch(x)
             y = model(x)
         

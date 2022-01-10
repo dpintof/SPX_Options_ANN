@@ -20,10 +20,8 @@ import tensorflow as tf
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-# from scipy.stats import norm
 from os import path
-# import dask.dataframe as dd
-# import math
+
 
 
 N_TIMESTEPS = 20
@@ -34,8 +32,6 @@ basepath = path.dirname(__file__)
 filepath = path.abspath(path.join(basepath, "..", 
                                   "Processed data/options_phase3_final.csv"))
 options_df = pd.read_csv(filepath)
-# options_df = dd.read_csv(filepath)
-# df = df.dropna(axis=0)
 options_df = options_df.drop(columns=['Sigma_20_Days_Annualized', 
                                       "Underlying_Price", "bid_eod", "ask_eod"])
 filepath = path.abspath(path.join(basepath, "..", 
@@ -64,8 +60,6 @@ price_history[cols] = price_history[cols].apply(pd.to_numeric, errors='coerce')
 
 """Add columns of price_history to options_df, according to the date in 
 "QuoteDate"""
-# n_options = options_df.shape[0] # Total number of options
-# with tqdm(total = n_options) as options_df:
 joined = options_df.join(price_history.set_index(0), on = 'QuoteDate')
 
 # Create dfs for calls and puts
@@ -87,12 +81,6 @@ prices of the underlying per row and an array with n_feature input values per
 row."""
 call_X_train = [call_X_train[:, -N_TIMESTEPS:].reshape(call_X_train.shape[0], 
                                         N_TIMESTEPS, 1), call_X_train[:, :4]]
-    # call_X_train[:, -N_TIMESTEPS:] returns an array with the last N_TIMESTEPS
-        # columns of call_X_train. Meaning the columns with the prices of the 
-        # underlying.
-    # call_X_train.shape[0] returns the number of rows of call_X_train
-    # call_X_train[:, :n_features] returns an array with the n_features 
-        # columns of call_X_train.
 call_X_test = [call_X_test[:, -N_TIMESTEPS:].reshape(call_X_test.shape[0], 
                                         N_TIMESTEPS, 1), call_X_test[:, :4]]
 put_X_train = [put_X_train[:, -N_TIMESTEPS:].reshape(put_X_train.shape[0], 
@@ -105,46 +93,13 @@ call_model = tf.keras.models.load_model('Saved_models/lstm_call_1')
 put_model = tf.keras.models.load_model('Saved_models/lstm_put_1')
 
 
-# def black_scholes_call(row):
-#     S = row.Underlying_Price
-#     X = row.Strike
-#     T = row.Time_to_Maturity
-#     r = row.RF_Rate / 100
-#     σ = row.Historical_Vol
-#     d1 = (np.log(S / X) + (r + (σ ** 2) / 2) * T) / (σ * (T ** .5))
-#     d2 = d1 - σ * (T ** .5)
-#     c = S * norm.cdf(d1) - X * np.exp(-r * T) * norm.cdf(d2)
-#     return c
-
-# def black_scholes_put(row):
-#     S = row.Underlying_Price
-#     X = row.Strike
-#     T = row.Time_to_Maturity
-#     r = row.RF_Rate / 100
-#     σ = row.Historical_Vol
-#     d1 = (np.log(S / X) + (r + (σ ** 2) / 2) * T) / (σ * (T ** .5))
-#     d2 = d1 - σ * (T ** .5)
-#     p  = norm.cdf(-d2) * X * np.exp(-r * T) - S * norm.cdf(-d1)
-#     return p
-
-# def median(series):
-#     n = series.shape[0]
-#     center = (n + 1) / 2
-#     if isinstance(center, int) == True:
-#         median_value = series[center]
-#     else:
-#         median_value = (series[math.floor(center)] + series[math.ceil(center)]) / 2
-#     return median_value
-
 def error_metrics(actual, predicted):
     diff = actual - predicted
     mse = np.mean(np.square(diff))
     rel = diff / actual
     bias = 100 * np.median(rel)
-    # bias = 100 * median(rel)
     aape = 100 * np.mean(np.abs(rel))
     mape = 100 * np.median(np.abs(rel))
-    # mape = 100 * median(np.abs(rel))
     pe5 = 100 * sum(np.abs(rel) < 0.05) / rel.shape[0]
     pe10 = 100 * sum(np.abs(rel) < 0.10) / rel.shape[0]
     pe20 = 100 * sum(np.abs(rel) < 0.20) / rel.shape[0]

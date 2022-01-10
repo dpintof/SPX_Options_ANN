@@ -58,21 +58,12 @@ def black_scholes_put(row):
 n_call = call_df.shape[0]
 n_put = put_df.shape[0]
 
-# """Add BSM_Predictio column to call_df and put_df"""
-# bsm_prediction_list = []
-# for index, row in tqdm(call_df.iterrows(), total = n_call):
-#     bsm_prediction_list.append(black_scholes_call(row))
-
-# call_df['BSM_Prediction'] = bsm_prediction_list
-
 """Add BSM_Prediction column to both call_df and put_df"""
 tqdm.pandas()
 print("2 lengthy commands will follow, with respective progress bars")
 call_df['BSM_Prediction'] = call_df.progress_apply(black_scholes_call, 
                                                    axis = 1)
 put_df['BSM_Prediction'] = put_df.progress_apply(black_scholes_put, axis = 1)
-# call_df['BSM_Prediction'] = call_df.apply(black_scholes_call, axis=1)
-# put_df['BSM_Prediction'] = put_df.apply(black_scholes_put, axis=1)
 
 call_df = call_df.drop(columns=["QuoteDate", "strike", "bid_eod", "ask_eod", 
                           "Time_to_Maturity", "RF_Rate", 

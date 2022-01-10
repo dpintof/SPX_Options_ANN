@@ -23,21 +23,7 @@ import math
 
 call = pd.read_csv("BSM_predictions/bsm_call.csv")
 put = pd.read_csv("BSM_predictions/bsm_put.csv")
- 
-# Split data into train and test sets
-# call_train = call.sample(frac=0.99)
-# call_test = call.loc[~call.index.isin(call_train.index)]
-# put_train = put.sample(frac=0.99)
-# put_test = put.loc[~put.index.isin(put_train.index)]
 
-# def median(series):
-#     n = series.shape[0]
-#     center = (n + 1) / 2
-#     if isinstance(center, int) == True:
-#         median_value = series[center]
-#     else:
-#         median_value = (series[math.floor(center)] + series[math.ceil(center)]) / 2
-#     return median_value
 
 def error_metrics(actual, predicted):
     diff = actual - predicted
@@ -56,9 +42,6 @@ def error_metrics(actual, predicted):
 
 line1 = error_metrics(call.Option_Average_Price, call.BSM_Prediction)
 line2 = error_metrics(put.Option_Average_Price, put.BSM_Prediction)
-
-# line1.insert(0, np.mean(np.square(call_y_train - call_model.predict(call_X_train).reshape(call_y_train.shape[0]))))
-# line2.insert(0, np.mean(np.square(put_y_train - put_model.predict(put_X_train).reshape(put_y_train.shape[0]))))
 
 metric_names = ["MSE", "Bias", "AAPE", "MAPE", "PE5", "PE10", "PE20"]
 

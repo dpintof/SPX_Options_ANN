@@ -119,7 +119,6 @@ n_options2 = len(options2_files)
 print("7 loops will follow, with respective progress bars:")
 
 # Creates df from all files
-# options2 = pd.concat([pd.read_csv(f) for f in options2_files])
 options2 = pd.concat([pd.read_csv(f) for f in tqdm(options2_files, 
                       total = n_options2)])
 
@@ -142,14 +141,6 @@ options2 = options2.rename(columns = {'DataDate': 'QuoteDate',
 
 # Create df with all options data
 options = options1.append(options2)
-
-# # TEST WITH SMALL SAMPLE
-# options = options1
-
-# # """TEST WITH SMALL SAMPLE FOR WHICH THE TIME TO MATURITY IS CLOSE TO 2 YEARS. 
-# THERE ARE NO 2 YEAR TREASURY RATES FOR SOME DATES."""
-# options = options.iloc[1052:1546] 
-
 
 # Function that returns the number of years between two dates
 def years_between(d1, d2):

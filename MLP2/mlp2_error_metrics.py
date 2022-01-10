@@ -18,8 +18,6 @@ except:
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-# import matplotlib.pyplot as plt
-# from scipy.stats import kde
 import tensorflow as tf
 from os import path
 from contextlib import redirect_stdout
