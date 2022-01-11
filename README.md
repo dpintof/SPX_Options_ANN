@@ -1,7 +1,7 @@
 # SPX_Options_ANN
-Public repository for the code related to my Master's thesis. My e-mail is: dpintof@disroot.org
+Public repository for the code of my Master's thesis. My e-mail is: dpintof@disroot.org. Contact me if you need any help or have a question.
 
-Work related to the paper Ke and Yang (2019) Option Pricing with Deep Learning. My code is inspired by what the authors made publicly available: https://github.com/ycm/cs230-proj. The objective is to price/evaluate vanilla options (financial derivatives) using different kinds of neural networks. 
+The work is related to the paper "Option Pricing with Deep Learning" by Ke and Yang (2019). My code is inspired by what the authors made publicly available: https://github.com/ycm/cs230-proj. The objective is to price/evaluate european vanilla options (financial derivatives) using different kinds of neural networks. 
 
 # Instructions
 process_raw_data_phase1.py, process_raw_data_phase2.py and process_raw_data_phase3_final.py were used with the full proprietary dataset. 
