@@ -16,4 +16,22 @@ Or
  * Options (September 2018 and August 2019, respectively) - https://www.historicaloptiondata.com/files/Batch_PRO_Sample_PHC.zip and https://www.historicaloptiondata.com/files/Sample_L2_2019_August.zip
  * Treasury Rates - https://www.treasury.gov/resource-center/data-chart-center/interest-rates/pages/TextView.aspx?data=yieldYear&year=2019
 
-(...) not finished.
+2. MLP1 model (what is explained here also applies to other models): 
+    2.1. Run mlp1_call.py and mlp1_put.py. Uses the data in the "Processed data" folder.
+    2.2. Run mlp1_error_metrics.py. It returns train-MSE (the mean squared error on the training set) and metrics on the test set: MSE, Bias (the median percent error), AAPE (the average absolute percent error), MAPE (the median absolute percent error), and PEX% (the percentage of observations within ±X% of the actual price).
+
+3. MLP2 model: 
+    3.1. Run mlp2_call.py and mlp2_put.py.
+    3.2. Run mlp2_error_metrics.py
+
+4. LSTM model:
+    4.1. Run lstm.py
+    4.2. Run lstm_error_metrics.py
+
+5. Black-Scholes-Merton (BSM) model:
+    5.1. Run bsm.py
+    5.2. Run bsm_error_metrics.py
+
+6. Create graphs showing training and validation losses over epoches - run ann_loss_graphs.py
+
+There is also code for a model called MLP3. It was supposed to be an MLP1 that outputed arbitrage-free prices. In the end due to lack of time and expertize I couldn't fully implement it but I leave the code here.
