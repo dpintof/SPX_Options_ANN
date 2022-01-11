@@ -21,7 +21,7 @@ Or
     * Run mlp1_error_metrics.py. It returns train-MSE (the mean squared error on the training set) and metrics on the test set: MSE, Bias (the median percent error), AAPE (the average absolute percent error), MAPE (the median absolute percent error), and PEX% (the percentage of observations within ±X% of the actual price).
 
 3. MLP2 model: 
-    * Run mlp2_call.py and mlp2_put.py.
+    * Run mlp2_call.py and mlp2_put.py
     * Run mlp2_error_metrics.py
 
 4. LSTM model:
@@ -29,7 +29,7 @@ Or
     * Run lstm_error_metrics.py
 
 5. Black-Scholes-Merton (BSM) model:
-    *Run bsm.py
+    * Run bsm.py
     * Run bsm_error_metrics.py
 
 6. Create graphs showing training and validation losses over epoches - run ann_loss_graphs.py
