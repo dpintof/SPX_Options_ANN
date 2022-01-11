@@ -17,8 +17,8 @@ Or
  * Treasury Rates - https://www.treasury.gov/resource-center/data-chart-center/interest-rates/pages/TextView.aspx?data=yieldYear&year=2019
 
 2. MLP1 model (what is explained here also applies to other models): 
-    i. Run mlp1_call.py and mlp1_put.py. Uses the data in the "Processed data" folder.
-    ii. Run mlp1_error_metrics.py. It returns train-MSE (the mean squared error on the training set) and metrics on the test set: MSE, Bias (the median percent error), AAPE (the average absolute percent error), MAPE (the median absolute percent error), and PEX% (the percentage of observations within ±X% of the actual price).
+    * Run mlp1_call.py and mlp1_put.py. Uses the data in the "Processed data" folder.
+    * Run mlp1_error_metrics.py. It returns train-MSE (the mean squared error on the training set) and metrics on the test set: MSE, Bias (the median percent error), AAPE (the average absolute percent error), MAPE (the median absolute percent error), and PEX% (the percentage of observations within ±X% of the actual price).
 
 3. MLP2 model: 
     3.1. Run mlp2_call.py and mlp2_put.py.
