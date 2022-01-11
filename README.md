@@ -17,20 +17,20 @@ Or
  * Treasury Rates - https://www.treasury.gov/resource-center/data-chart-center/interest-rates/pages/TextView.aspx?data=yieldYear&year=2019
 
 2. MLP1 model (what is explained here also applies to other models): 
-    * Run mlp1_call.py and mlp1_put.py. Uses the data in the "Processed data" folder.
-    * Run mlp1_error_metrics.py. It returns train-MSE (the mean squared error on the training set) and metrics on the test set: MSE, Bias (the median percent error), AAPE (the average absolute percent error), MAPE (the median absolute percent error), and PEX% (the percentage of observations within ±X% of the actual price).
+   2.1. Run mlp1_call.py and mlp1_put.py. Uses the data in the "Processed data" folder.
+   * Run mlp1_error_metrics.py. It returns train-MSE (the mean squared error on the training set) and metrics on the test set: MSE, Bias (the median percent error), AAPE (the average absolute percent error), MAPE (the median absolute percent error), and PEX% (the percentage of observations within ±X% of the actual price).
 
 3. MLP2 model: 
-    * Run mlp2_call.py and mlp2_put.py
-    * Run mlp2_error_metrics.py
+   * Run mlp2_call.py and mlp2_put.py
+   * Run mlp2_error_metrics.py
 
 4. LSTM model:
    * Run lstm.py
    * Run lstm_error_metrics.py
 
 5. Black-Scholes-Merton (BSM) model:
-    * Run bsm.py
-    * Run bsm_error_metrics.py
+   * Run bsm.py
+   * Run bsm_error_metrics.py
 
 6. Create graphs showing training and validation losses over epoches - run ann_loss_graphs.py
 
