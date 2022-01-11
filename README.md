@@ -25,8 +25,8 @@ Or
     * Run mlp2_error_metrics.py
 
 4. LSTM model:
-    * Run lstm.py
-    * Run lstm_error_metrics.py
+   * Run lstm.py
+   * Run lstm_error_metrics.py
 
 5. Black-Scholes-Merton (BSM) model:
     * Run bsm.py
