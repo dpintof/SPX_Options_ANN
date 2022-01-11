@@ -12,9 +12,9 @@ process_raw_free_dataset.py is to be used with the small free dataset.
 Or
 
 1. Run process_raw_free_dataset.py to create options-df.csv and underlying_df.csv in the "Processed data" folder. It uses data in the "Raw data" folder. Because some data files are quite large I don't include them in the repository. The sources of the free raw data are:
- * Underlying - https://www.wsj.com/market-data/quotes/index/SPX/historical-prices
- * Options (September 2018 and August 2019, respectively) - https://www.historicaloptiondata.com/files/Batch_PRO_Sample_PHC.zip and https://www.historicaloptiondata.com/files/Sample_L2_2019_August.zip
- * Treasury Rates - https://www.treasury.gov/resource-center/data-chart-center/interest-rates/pages/TextView.aspx?data=yieldYear&year=2019
+  * Underlying - https://www.wsj.com/market-data/quotes/index/SPX/historical-prices
+  * Options (September 2018 and August 2019, respectively) - https://www.historicaloptiondata.com/files/Batch_PRO_Sample_PHC.zip and https://www.historicaloptiondata.com/files/Sample_L2_2019_August.zip
+  * Treasury Rates - https://www.treasury.gov/resource-center/data-chart-center/interest-rates/pages/TextView.aspx?data=yieldYear&year=2019
 
 2. MLP1 model (what is explained here also applies to other models): 
    * Run mlp1_call.py and mlp1_put.py. Uses the data in the "Processed data" folder.
