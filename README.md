@@ -34,4 +34,5 @@ Or
 
 6. Create graphs showing training and validation losses over epoches - run ann_loss_graphs.py
 
+# Other
 There is also code for a model called MLP3. It was supposed to be an MLP1 that outputed arbitrage-free prices. In the end due to lack of time and expertize I couldn't fully implement it but I leave the code here.
